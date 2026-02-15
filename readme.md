@@ -1,4 +1,16 @@
-## 🇺🇸 **MesHFest – Application Summary**
+# MesHFest
+
+
+What is MesHFest?
+
+[English Summary](https://github.com/QuixoteSystems/meshfest-lite?tab=readme-ov-file#-meshfest--application-summary) 
+
+¿Qué es MesHFest?
+
+[Resumen en castellano](https://github.com/QuixoteSystems/meshfest-lite/edit/main/readme.md#-meshfest--resumen-de-la-aplicaci%C3%B3n)
+
+---
+## 🇺🇸 **Application Summary**
 
 MesHFest is a lightweight communication bridge designed to interconnect Meshtastic networks with HF digital modes such as VARA HF and JS8Call, enabling seamless message forwarding between radio and mesh infrastructures.
 
@@ -17,7 +29,7 @@ MesHFest enables the creation of hybrid communication ecosystems where LoRa mesh
 
 ---
 
-## 🇪🇸 **MesHFest – Resumen de la Aplicación**
+## 🇪🇸 **Resumen de la Aplicación**
 
 MesHFest es un puente de comunicaciones ligero diseñado para interconectar redes Meshtastic con modos digitales en HF como VARA HF y JS8Call, permitiendo el reenvío transparente de mensajes entre infraestructuras de radio y redes mesh.
 
