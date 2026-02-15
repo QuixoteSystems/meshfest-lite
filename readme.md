@@ -1,4 +1,5 @@
-<img width="1024" height="1024" alt="logo2" src="https://github.com/user-attachments/assets/0b4b4762-5eaf-4b14-a8ea-89b3aff7a322" />
+<img width="600" height="600" alt="logo2" src="https://github.com/user-attachments/assets/0b4b4762-5eaf-4b14-a8ea-89b3aff7a322" />
+
 # MesHFest
 
 What is MesHFest?
