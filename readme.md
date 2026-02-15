@@ -2,7 +2,7 @@
 
 ## What is MesHFest? - ¿Qué es MesHFest?
 
-[Ir a Application Summary](#application-summary)  <--->  [Resumen en castellano](#resumen-de-la-aplicación)
+[Ir a Application Summary](#-application-summary)  <--->  [Resumen en castellano](#-resumen-de-la-aplicación)
 
 
 
