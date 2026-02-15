@@ -2,7 +2,7 @@
 
 ## What is MesHFest? - ¿Qué es MesHFest?
 
-[English Summary](https://github.com/QuixoteSystems/meshfest-lite?tab=readme-ov-file#-meshfest--application-summary) <--->  [Resumen en castellano]([https://github.com/QuixoteSystems/meshfest-lite/edit/main/readme.md#-meshfest--resumen-de-la-aplicaci%C3%B3n](https://github.com/QuixoteSystems/meshfest-lite/tree/main?tab=readme-ov-file#-resumen-de-la-aplicaci%C3%B3n))
+[Ir a Application Summary](#application-summary)  <--->  [Resumen en castellano](#resumen-de-la-aplicación)
 
 
 
