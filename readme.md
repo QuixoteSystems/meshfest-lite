@@ -1,14 +1,10 @@
-<img width="600" height="600" alt="logo2" src="https://github.com/user-attachments/assets/0b4b4762-5eaf-4b14-a8ea-89b3aff7a322" />
+<img src="https://github.com/user-attachments/assets/0b4b4762-5eaf-4b14-a8ea-89b3aff7a322" width="450"></p>
 
-# MesHFest
+## What is MesHFest? - ¿Qué es MesHFest?
 
-What is MesHFest?
+[English Summary](https://github.com/QuixoteSystems/meshfest-lite?tab=readme-ov-file#-meshfest--application-summary) <--->  [Resumen en castellano](https://github.com/QuixoteSystems/meshfest-lite/edit/main/readme.md#-meshfest--resumen-de-la-aplicaci%C3%B3n)
 
-[English Summary](https://github.com/QuixoteSystems/meshfest-lite?tab=readme-ov-file#-meshfest--application-summary) 
 
-¿Qué es MesHFest?
-
-[Resumen en castellano](https://github.com/QuixoteSystems/meshfest-lite/edit/main/readme.md#-meshfest--resumen-de-la-aplicaci%C3%B3n)
 
 ---
 ## 🇺🇸 **Application Summary**
