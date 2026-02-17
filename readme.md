@@ -10,11 +10,11 @@
   </p>
 </p>
 
-
+![meshfest-lite-v1](https://github.com/user-attachments/assets/47a2aec6-0193-45ea-89e2-839fcbd40c36)
 
 ---
 
-## 🇺🇸 **Application Summary**
+## **Application Summary**
 
 MesHFest is a lightweight communication bridge designed to interconnect Meshtastic networks with HF digital modes such as VARA HF and JS8Call, enabling seamless message forwarding between radio and mesh infrastructures.
 
@@ -33,7 +33,90 @@ MesHFest enables the creation of hybrid communication ecosystems where LoRa mesh
 
 ---
 
-# 🇬🇧 Sintaxis & Examples
+
+# 🧠 Architecture Diagram (HF ↔ Mesh Hybrid Model)
+
+
+```
+           ~~~~~~~~~~~~~ HF RF LINK ~~~~~~~~~~~~~
+             (AX.25 + QXT1 ACK Protocol Layer)
+               │                          │
+         ┌─────▼─────┐              ┌─────▼─────┐
+         │  VARA HF  │              │  VARA HF  │
+         │  Modem A  │              │  Modem B  │
+         └─────┬─────┘              └─────┬─────┘
+               │                          │
+           KISS TCP                     KISS TCP
+               │                          │
+  ┌────────────▼─────────┐          ┌─────▼────────────────┐
+  │    MeshFest-Lite     │          │    MeshFest-Lite     │
+  │  HF ↔ Mesh Router A  │          │  HF ↔ Mesh Router B  │
+  └────────────┬─────────┘          └──────────┬───────────┘
+               │                               │
+           Meshtastic                      Meshtastic
+           Interface A                    Interface B
+               │                               │
+        ┌──────▼──────┐                  ┌──-──▼──────┐
+        │ LoRa Mesh A │                  │ LoRa Mesh B│
+        │ (Nodes)     │                  │ (Nodes)    │
+        └─────────────┘                  └────────────┘
+        
+```
+
+---
+
+# 🔎 Logical Flow
+
+```
+LoRa (Meshtastic) <---> MeshFest-lite <---> VARA HF <------- HF ------> VARA HF <--->  MeshFest-lite <---> LoRa (Meshtastic)
+```
+
+---
+
+# 🔐 Policy Model (Firewall Analogy)
+
+| Layer | Direction | Flag |
+|-------|-----------|------|
+| HF OUTPUT | LoRa → HF | `--hf-allow-tx-dest-shortname` |
+| MESH FORWARD | HF → LoRa | `--mesh-allow-dest-shortname` |
+
+---
+
+# 📡 Transport Stack (Top → Bottom)
+
+HF Backbone:
+- VARA as modem (transport only)
+- KISS TCP 
+- AX.25 framing
+- QXT1 application ACK (stop-and-wait, retries)
+
+Gateway Layer:
+- MeshFest-Lite routing engine
+- Policy enforcement
+- Relay tagging (`>DEST:`)
+
+Access Layer:
+- Meshtastic interface (Serial / TCP)
+- Meshtastic Mesh
+
+## Transport Model
+
+MeshFest-Lite uses:
+
+- VARA as **physical/modem layer only**
+- KISS TCP for AX.25 framing
+- QXT1 application-layer protocol:
+  - `T_MSG`
+  - Message ID
+  - Sequence number
+  - Stop-and-wait ACK handling
+  - Retries
+
+It does **NOT** rely on VARA's internal ARQ session management, this allow to use transceivers without CAT control, just using VOX.
+
+---
+
+# Sintaxis & Examples
 
 ## 1️⃣ Core HF / VARA Configuration
 
@@ -305,6 +388,269 @@ python meshfest-lite.py \
   --verbose 2
 ```
 
+
+# 📖 MeshFest-Lite – CLI Reference
+
+
+To exit the program, type `exit` or press `Ctrl+C`.
+
+## 🛰 Core HF / VARA Options
+
+| Flag | Type | Default | Description |
+|------|------|---------|------------|
+| `--call` | string | **required** | Your station callsign (e.g. EA1ABC) |
+| `--host` | string | `127.0.0.1` | VARA KISS TCP host |
+| `--port` | int | `8100` | VARA KISS TCP port |
+| `--axdst` | string | `APVARA` | AX.25 destination field (cosmetic only) |
+
+---
+
+## 📡 Meshtastic Interface
+
+| Flag | Type | Default | Description |
+|------|------|---------|------------|
+| `--mesh-serial` | string | `None` | Serial device (COMx or /dev/ttyUSB0) |
+| `--mesh-host` | string | `None` | Meshtastic IP[:PORT] (default port 4403) |
+| `--mesh-dest-id` | string | `None` | Destination NodeId (e.g. !abcdef01) |
+| `--mesh-channel-index` | int | `None` | Channel index |
+| `--mesh-channel-name` | string | `None` | Channel name |
+| `--mesh-want-ack` | flag | `False` | Request ACK when sending to specific node |
+
+---
+
+## 🔒 Security & Policy Controls
+
+| Flag | Type | Default | Description |
+|------|------|---------|------------|
+| `--mesh-allow-dest-shortname` | string (CSV) | `None` | Allowed Meshtastic shortnames for relay (HF → Mesh). If omitted, any destination is allowed |
+| `--hf-allow-tx-dest-shortname` | string (CSV) | `None` | Allowed `@DEST` commands for HF TX. If omitted, any `@DEST` is allowed |
+
+---
+
+## 🔁 Bridge Configuration (VARA ↔ Mesh)
+
+
+| Flag | Type | Default | Description |
+|------|------|---------|------------|
+| `--bridge-mesh` | flag | `False` | Enable Meshtastic ↔ VARA bridge |
+| `--bridge-mesh-to-vara` | string | `ALL` | VARA destination for traffic coming from Mesh |
+| `--bridge-varato-mesh-prefix` | string | `[VARA] ` | Prefix added to VARA → Mesh traffic |
+| `--bridge-meshto-vara-prefix` | string | `[MESH] ` | Prefix added to Mesh → VARA traffic |
+
+---
+
+## 📊 Monitoring & Logging
+
+| Flag | Type | Default | Description |
+|------|------|---------|------------|
+| `--monitor` | flag | `False` | Monitor mode (show readable traffic not addressed to you) |
+| `-v`, `--verbose` | int (0/1/2) | `1` | Log level (0=errors, 1=normal, 2=debug) |
+| `--log-mode` | enum | `console` | Log destination: `console`, `file`, `both` |
+| `--log-file` | string | `meshfest.log` | Log file path (used if log-mode includes file) |
+
+---
+
+## 🌍 Language
+
+| Flag | Type | Default | Description |
+|------|------|---------|------------|
+| `--lang` | enum (`en`, `es`) | `en` | Interface language |
+
+---
+
+# 🧪 Example Configurations
+
+## Minimal HF Mode
+
+```bash
+python meshfest-lite.py \
+  --call EA1ABC \
+  --host 127.0.0.1 \
+  --port 8100
+```
+
+---
+
+## Full Bridge with Security Policy
+
+```bash
+python meshfest-lite.py \
+  --call 30QXT1 \
+  --bridge-mesh \
+  --mesh-host 192.168.1.25:4403 \
+  --mesh-want-ack \
+  --bridge-mesh-to-vara 30QXT3 \
+  --mesh-allow-dest-shortname QXT3,QXT6 \
+  --hf-allow-tx-dest-shortname QXT4 \
+  --verbose 2
+```
+
+---
+
+# 🔁 Message Flow Examples
+
+## 1️⃣ Direct HF Message (Custom Reliable Mode)
+
+User input:
+```
+EA1XYZ: Hello
+```
+
+Flow:
+```
+User
+  ↓
+MeshFest
+  ↓
+AX.25 frame (T_MSG)
+  ↓
+VARA modem (audio transport)
+  ↓
+Remote station
+  ↓
+Custom ACK returned
+```
+
+Reliability is handled by:
+
+- `_send_with_ack()`
+- Custom ACK tracking
+- Application-level retransmission
+
+---
+
+## 2️⃣ HF Relay to Mesh (Using @DEST)
+
+User input:
+```
+EA1ABC: @MSH1 test message
+```
+
+Flow:
+```
+Local User
+   ↓
+MeshFest
+   ↓
+AX.25 T_MSG frame
+   ↓
+HF Relay (EA1ABC)
+   ↓
+Relay parses ">MSH4:"
+   ↓
+Meshtastic node MSH4
+```
+
+Security control:
+
+- `--hf-allow-tx-dest-shortname`
+- `--mesh-allow-dest-shortname`
+
+---
+
+## 3️⃣ Meshtastic to HF Forwarding
+
+```
+Meshtastic Node
+       ↓
+Meshtastic Interface
+       ↓
+MeshFest-lite Bridge
+       ↓
+AX.25 frame
+       ↓
+HF transmission
+```
+
+Transport reliability on HF:
+
+- Application-layer ACK
+- Configurable retries
+- Stop-and-wait logic
+
+---
+
+# 📦 File Transfer Workflow (Custom Reliable Layer)
+
+MeshFest-Lite file transfer uses:
+
+- Fragmentation
+- Message IDs
+- Sequence numbers
+- Custom ACK handling
+- Retries
+
+## HF File Transfer Model
+
+```
+File
+  ↓
+Chunked into payload blocks
+  ↓
+Each block sent as T_MSG
+  ↓
+ACK received
+  ↓
+Next block
+```
+
+This is **application-controlled reliability**, independent of VARA ARQ.
+
+---
+
+# 🧩 Advanced Usage / Network Design Notes
+
+## Custom Reliability Layer
+
+MeshFest-Lite implements its own:
+
+- Stop-and-wait protocol
+- Message tracking
+- ACK validation
+- Retry logic
+- Delivery confirmation logs
+
+This allows:
+
+- Deterministic routing
+- Policy-based forwarding
+- Hybrid network bridging
+- Fine-grained control over message flow
+
+---
+
+## Why Not Native VARA ARQ?
+
+Using KISS + custom protocol allows:
+
+- Full control of routing logic
+- Embedded metadata
+- Relay tagging (`>DEST:` format)
+- Multi-hop style relaying
+- Hybrid mesh/HF policy enforcement
+
+It turns VARA into a **transparent transport layer**, not a session controller.
+
+---
+
+## Deployment Modes
+
+| Mode | Description |
+|------|------------|
+| Transparent HF Node | AX.25 custom reliable messaging |
+| Controlled Relay | Policy-based forwarding |
+| Hybrid Gateway | HF ↔ Mesh bridge |
+| Secure Bridge | Allowlist filtering enabled |
+
+---
+
+MeshFest-Lite is a:
+
+**Custom reliable messaging engine over HF + LoRa mesh integration layer**
+
+Not just a chat client, and not dependent on VARA’s native ARQ sessions.
+
+
 ---
 
 ## 🇪🇸**Resumen de la Aplicación**
@@ -330,7 +676,7 @@ Interactive chat and file transfer over VARA HF (KISS/TCP) with optional Meshtas
 
 ---
 
-# 🇪🇸 Sintaxis Versión en Castellano
+# Sintaxis Versión en Castellano
 
 ## 1️⃣ Configuración HF / VARA
 
@@ -491,334 +837,5 @@ Archivo de log.
 Idioma de la interfaz (`es` o `en`).
 
 ---
-# 📖 MeshFest-Lite – CLI Reference
 
-## 🛰 Core HF / VARA Options
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--call` | string | **required** | Your station callsign (e.g. EA1ABC) |
-| `--host` | string | `127.0.0.1` | VARA KISS TCP host |
-| `--port` | int | `8100` | VARA KISS TCP port |
-| `--axdst` | string | `APVARA` | AX.25 destination field (cosmetic only) |
-
----
-
-## 📡 Meshtastic Interface
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--mesh-serial` | string | `None` | Serial device (COMx or /dev/ttyUSB0) |
-| `--mesh-host` | string | `None` | Meshtastic IP[:PORT] (default port 4403) |
-| `--mesh-dest-id` | string | `None` | Destination NodeId (e.g. !abcdef01) |
-| `--mesh-channel-index` | int | `None` | Channel index |
-| `--mesh-channel-name` | string | `None` | Channel name |
-| `--mesh-want-ack` | flag | `False` | Request ACK when sending to specific node |
-
----
-
-## 🔒 Security & Policy Controls
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--mesh-allow-dest-shortname` | string (CSV) | `None` | Allowed Meshtastic shortnames for relay (HF → Mesh). If omitted, any destination is allowed |
-| `--hf-allow-tx-dest-shortname` | string (CSV) | `None` | Allowed `@DEST` commands for HF TX. If omitted, any `@DEST` is allowed |
-
----
-
-## 🔁 Bridge Configuration (VARA ↔ Mesh)
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--bridge-mesh` | flag | `False` | Enable Meshtastic ↔ VARA bridge |
-| `--bridge-mesh-to-vara` | string | `ALL` | VARA destination for traffic coming from Mesh |
-| `--bridge-varato-mesh-prefix` | string | `[VARA] ` | Prefix added to VARA → Mesh traffic |
-| `--bridge-meshto-vara-prefix` | string | `[MESH] ` | Prefix added to Mesh → VARA traffic |
-
----
-
-## 📊 Monitoring & Logging
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--monitor` | flag | `False` | Monitor mode (show readable traffic not addressed to you) |
-| `-v`, `--verbose` | int (0/1/2) | `1` | Log level (0=errors, 1=normal, 2=debug) |
-| `--log-mode` | enum | `console` | Log destination: `console`, `file`, `both` |
-| `--log-file` | string | `meshfest.log` | Log file path (used if log-mode includes file) |
-
----
-
-## 🌍 Language
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--lang` | enum (`en`, `es`) | `en` | Interface language |
-
----
-
-# 🧪 Example Configurations
-
-## Minimal HF Mode
-
-```bash
-python meshfest-lite.py \
-  --call EA1ABC \
-  --host 127.0.0.1 \
-  --port 8100
-```
-
----
-
-## Full Bridge with Security Policy
-
-```bash
-python meshfest-lite.py \
-  --call 30QXT1 \
-  --bridge-mesh \
-  --mesh-host 192.168.1.25:4403 \
-  --mesh-want-ack \
-  --bridge-mesh-to-vara 30QXT3 \
-  --mesh-allow-dest-shortname QXT3,QXT6 \
-  --hf-allow-tx-dest-shortname QXT4 \
-  --verbose 2
-```
-
----
-
-# 🔐 Traffic Control Model (Quick Overview)
-
-| Direction | Controlled By |
-|------------|--------------|
-| HF → Mesh relay | `--mesh-allow-dest-shortname` |
-| Local HF TX using `@DEST` | `--hf-allow-tx-dest-shortname` |
-| Mesh → HF forwarding | `--bridge-mesh-to-vara` |
-
----
-
-MeshFest-Lite combines:
-
-- HF ARQ transport (VARA HF via KISS TCP)
-- Meshtastic IP/Serial interface
-- Policy-aware message routing
-- Optional traffic filtering for secure hybrid deployments
-
-
-
-# 🧠 Architecture Diagram (HF ↔ Mesh Hybrid Model)
-
-```
-                    ┌────────────────────────────┐
-                    │        MeshFest-Lite       │
-                    │  Custom HF + Mesh Router   │
-                    └─────────────┬──────────────┘
-                                  │
-                          HF via KISS TCP
-                          (VARA as modem)
-                                  │
-        ┌─────────────────────────┴─────────────────────────┐
-        │                                                   │
-   ┌────▼────┐                                        ┌────▼────┐
-   │  VARA   │                                        │  KISS   │
-   │  Modem  │                                        │  TCP    │
-   └────┬────┘                                        └────┬────┘
-        │                                                   │
-        │                                                   │
-   ┌────▼───────────────────────────────────────────────────▼────┐
-   │                         HF Network                           │
-   │            AX.25 Frames + Custom ACK Protocol                │
-   └───────────────────────────────────────────────────────────────┘
-
-                                  │
-                                  │ Meshtastic (Serial / TCP)
-                                  │
-                           ┌──────▼──────┐
-                           │  Meshtastic │
-                           │   Interface │
-                           └──────┬──────┘
-                                  │
-                     ┌────────────▼────────────┐
-                     │      LoRa Mesh Network   │
-                     │  (Nodes, ShortNames)     │
-                     └──────────────────────────┘
-```
-
-## Transport Model
-
-MeshFest-Lite uses:
-
-- VARA as **physical/modem layer only**
-- KISS TCP for AX.25 framing
-- Custom application-layer protocol:
-  - `T_MSG`
-  - Message ID
-  - Sequence number
-  - Stop-and-wait ACK handling
-  - Retries
-
-It does **NOT** rely on VARA's internal ARQ session management.
-
----
-
-# 🔁 Message Flow Examples
-
-## 1️⃣ Direct HF Message (Custom Reliable Mode)
-
-User input:
-```
-EA1XYZ: Hello
-```
-
-Flow:
-```
-User
-  ↓
-MeshFest
-  ↓
-AX.25 frame (T_MSG)
-  ↓
-VARA modem (audio transport)
-  ↓
-Remote station
-  ↓
-Custom ACK returned
-```
-
-Reliability is handled by:
-
-- `_send_with_ack()`
-- Custom ACK tracking
-- Application-level retransmission
-
----
-
-## 2️⃣ HF Relay to Mesh (Using @DEST)
-
-User input:
-```
-30QXT3: @QXT4 test message
-```
-
-Flow:
-```
-Local User
-   ↓
-MeshFest
-   ↓
-AX.25 T_MSG frame
-   ↓
-HF Relay (30QXT3)
-   ↓
-Relay parses ">QXT4:"
-   ↓
-Meshtastic node QXT4
-```
-
-Security control:
-
-- `--hf-allow-tx-dest-shortname`
-- `--mesh-allow-dest-shortname`
-
----
-
-## 3️⃣ Mesh to HF Forwarding
-
-```
-Mesh Node
-   ↓
-Meshtastic Interface
-   ↓
-MeshFest Bridge
-   ↓
-AX.25 frame
-   ↓
-HF transmission
-```
-
-Transport reliability on HF:
-
-- Application-layer ACK
-- Configurable retries
-- Stop-and-wait logic
-
----
-
-# 📦 File Transfer Workflow (Custom Reliable Layer)
-
-MeshFest-Lite file transfer uses:
-
-- Fragmentation
-- Message IDs
-- Sequence numbers
-- Custom ACK handling
-- Retries
-
-## HF File Transfer Model
-
-```
-File
-  ↓
-Chunked into payload blocks
-  ↓
-Each block sent as T_MSG
-  ↓
-ACK received
-  ↓
-Next block
-```
-
-This is **application-controlled reliability**, independent of VARA ARQ.
-
----
-
-# 🧩 Advanced Usage / Network Design Notes
-
-## Custom Reliability Layer
-
-MeshFest-Lite implements its own:
-
-- Stop-and-wait protocol
-- Message tracking
-- ACK validation
-- Retry logic
-- Delivery confirmation logs
-
-This allows:
-
-- Deterministic routing
-- Policy-based forwarding
-- Hybrid network bridging
-- Fine-grained control over message flow
-
----
-
-## Why Not Native VARA ARQ?
-
-Using KISS + custom protocol allows:
-
-- Full control of routing logic
-- Embedded metadata
-- Relay tagging (`>DEST:` format)
-- Multi-hop style relaying
-- Hybrid mesh/HF policy enforcement
-
-It turns VARA into a **transparent transport layer**, not a session controller.
-
----
-
-## Deployment Modes
-
-| Mode | Description |
-|------|------------|
-| Transparent HF Node | AX.25 custom reliable messaging |
-| Controlled Relay | Policy-based forwarding |
-| Hybrid Gateway | HF ↔ Mesh bridge |
-| Secure Bridge | Allowlist filtering enabled |
-
----
-
-MeshFest-Lite is a:
-
-**Custom reliable messaging engine over HF + LoRa mesh integration layer**
-
-Not just a chat client, and not dependent on VARA’s native ARQ sessions.
 
