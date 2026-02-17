@@ -3,7 +3,7 @@
 <a href="#application-summary">🇺🇸 Application Summary</a> •
 <a href="#Sintaxis-&-Examples">Syntax & Examples</a> •
 <a href="#meshfest-lite--cli-reference">CLI Reference</a> •
-<a href="#architecture-diagram-hf--mesh-hybrid-model">Architecture</a><br>
+<a href="#architecture-diagram-hf--mesh-hybrid-model">Architecture Diagram</a><br>
 <p align="center">
 <a href="#resumen-en-castellano">🇪🇸 Resumen de la Aplicación</a> •
 <a href="#sintaxis-version-en-castellano">Sintaxis y Ejemplos</a>
