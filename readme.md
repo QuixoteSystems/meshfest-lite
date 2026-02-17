@@ -3,7 +3,7 @@
 ## Index
 
 
-🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#-architecture-diagram-hf--mesh-hybrid-model) • [CLI Reference](#meshfest-lite--cli-reference) • [Syntax & Examples](#sintaxis--examples)
+🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#-architecture-diagram-hf--mesh-hybrid-model) • [Syntax & Examples](#sintaxis--examples)
 
 🇪🇸 [Resumen de la Aplicación](#resumen-en-castellano) • [Sintaxis y Ejemplos](#sintaxis-version-en-castellano)
 
@@ -105,6 +105,54 @@ It does **NOT** rely on VARA's internal ARQ session management, this allow to us
 
 ---
 
+---
+
+# 📦 File Transfer Workflow (Custom Reliable Layer)
+
+MeshFest-Lite file transfer uses:
+
+- Fragmentation
+- Message IDs
+- Sequence numbers
+- Custom ACK handling
+- Retries
+
+---
+
+# 🧩 Advanced Usage / Network Design Notes
+
+## Custom Reliability Layer
+
+MeshFest-Lite implements its own:
+
+- Stop-and-wait protocol
+- Message tracking
+- ACK validation
+- Retry logic
+- Delivery confirmation logs
+
+This allows:
+
+- Deterministic routing
+- Policy-based forwarding
+- Hybrid network bridging
+- Fine-grained control over message flow
+
+---
+
+## Why Not Native VARA ARQ?
+
+Using KISS + custom protocol allows:
+
+- Full control of routing logic
+- Embedded metadata
+- Relay tagging (`>DEST:` format)
+- Multi-hop style relaying
+- Hybrid mesh/HF policy enforcement
+
+It turns VARA into a **transparent transport layer**, not a session controller.
+---
+
 # Sintaxis & Examples
 
 To exit the program, type `exit` or press `Ctrl+C`.
@@ -116,6 +164,7 @@ Your station callsign.
 
 Example:
 ```bash
+
 --call EA1ABC
 ```
 
@@ -199,7 +248,7 @@ Select channel by index.
 Select channel by name.
 
 ```bash
---mesh-channel-name "LongFast"
+--mesh-channel-name "MediumFast"
 ```
 
 ---
@@ -220,7 +269,7 @@ Request ACK when sending to a specific node.
 Restricts which Meshtastic shortnames can be used as relay destinations (HF → Mesh).
 
 ```bash
---mesh-allow-dest-shortname QXT3,QXT6
+--mesh-allow-dest-shortname MSH3,MSH6
 ```
 
 If omitted, any destination is allowed.
@@ -232,7 +281,7 @@ If omitted, any destination is allowed.
 Restricts which `@DEST` commands can be transmitted over HF.
 
 ```bash
---hf-allow-tx-dest-shortname QXT4
+--hf-allow-tx-dest-shortname MSH4
 ```
 
 Example:
@@ -240,13 +289,13 @@ Example:
 If running with:
 
 ```bash
---hf-allow-tx-dest-shortname QXT4
+--hf-allow-tx-dest-shortname MSH4
 ```
 
 Then:
 
 ```
-30QXT3: @QXT3 test
+EA1ABC: @MSH3 test
 ```
 
 Will be blocked.
@@ -254,7 +303,7 @@ Will be blocked.
 But:
 
 ```
-30QXT3: @QXT4 test
+EA1ABC: @MSH4 test
 ```
 
 Will be transmitted.
@@ -409,52 +458,6 @@ python meshfest-lite.py \
   --verbose 2
 ```
 
----
-
-# 📦 File Transfer Workflow (Custom Reliable Layer)
-
-MeshFest-Lite file transfer uses:
-
-- Fragmentation
-- Message IDs
-- Sequence numbers
-- Custom ACK handling
-- Retries
-
----
-
-# 🧩 Advanced Usage / Network Design Notes
-
-## Custom Reliability Layer
-
-MeshFest-Lite implements its own:
-
-- Stop-and-wait protocol
-- Message tracking
-- ACK validation
-- Retry logic
-- Delivery confirmation logs
-
-This allows:
-
-- Deterministic routing
-- Policy-based forwarding
-- Hybrid network bridging
-- Fine-grained control over message flow
-
----
-
-## Why Not Native VARA ARQ?
-
-Using KISS + custom protocol allows:
-
-- Full control of routing logic
-- Embedded metadata
-- Relay tagging (`>DEST:` format)
-- Multi-hop style relaying
-- Hybrid mesh/HF policy enforcement
-
-It turns VARA into a **transparent transport layer**, not a session controller.
 
 ---
 
