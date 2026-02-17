@@ -260,29 +260,29 @@ Example:
 --hf-allow-tx-dest-shortname MSH4
 ```
 
-Practical Example:
+ - Practical Example:
 
-If running with:
+    If running with:
 
-```bash
---hf-allow-tx-dest-shortname MSH4
-```
+    ```bash
+     --hf-allow-tx-dest-shortname MSH4
+     ```
 
-Then If you write o CLI:
+    Then If you write on CLI:
 
-```
-EA1ABC: @MSH3 test
-```
+   ```
+   EA1ABC > @MSH3: test
+   ```
 
-Will be blocked.
+   Will be blocked.
 
-But If you write on CLI:
+   But If you write on CLI:
 
-```
-EA1ABC: @MSH4 test
-```
+   ```
+   EA1ABC > @MSH4: test
+    ```
 
-Will be transmitted.
+   Will be transmitted.
 
 ---
 
@@ -301,7 +301,6 @@ Example:
 ```bash
 --bridge-mesh-to-vara EA1ABC
 ```
-
 
 - Prefix for traffic from VARA to Mesh. `--bridge-varato-mesh-prefix`
 Example:
@@ -326,12 +325,11 @@ Example:
 --monitor
 ```
 
-
 - Log level `-v / --verbose [num]`:
 
-- `0` = errors  
-- `1` = normal  
-- `2` = debug  
+ - `0` = errors  
+ - `1` = normal  
+ - `2` = debug  
 
 Example:
 ```bash
@@ -349,7 +347,7 @@ Example:
 --log-mode both
 ```
 
-- Log file path.  `--log-file [file.log]`. Default: `meshfest.log`
+- Log file path.  `--log-file [file.log]`. Default: `meshfest.log`. To use this flag you need activate file logging with `--log-mode file` or `--log-mode both`
 Example:
 ```bash
 --log-file mylog.txt
