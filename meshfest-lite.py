@@ -637,6 +637,7 @@ class VaraApp:
         self._msgid = (self._msgid + 1) & 0x7FFFFFFF
         return self._msgid
 
+
     def send_ui(self, info: bytes, dst_ax25: Optional[str] = None):
         """
         Envía un frame AX.25 UI por KISS.
@@ -646,9 +647,50 @@ class VaraApp:
         frame = ax25_build_ui(axdst, self.mycall, info)
         self.kiss.send_ax25(frame)
 
+
     def send_ack(self, to_call: str, msgid: int, seq: int):
         pkt = app_pack(T_ACK, 0, self.mycall, to_call, msgid, seq, 0, b"")
         self.send_ui(pkt, dst_ax25=to_call)
+
+
+    def _extract_at_shortname(line: str) -> str | None:
+        """
+        Devuelve el shortname si la línea empieza por '@SHORT' (acepta '@SHORT:' también).
+        """
+        if not line:
+            return None
+        s = line.strip()
+        if not s.startswith("@"):
+            return None
+        token = s[1:].split(None, 1)[0]   # hasta el primer espacio
+        token = token.rstrip(":").strip()
+        token = token.upper()
+        return token or None
+
+
+    def _hf_tx_allowed(self, line: str, hf_allowed_tx_shortnames: set[str] | None) -> bool:
+        """
+        Política local de TX HF:
+        - Si no hay flag -> permite todo
+        - Si hay flag -> solo permite @DEST en la lista
+        """
+        dst = _extract_at_shortname(line)
+        if dst is None:
+            return True  # no es @DEST, no aplicamos este control
+
+        if hf_allowed_tx_shortnames is None:
+            return True  # sin flag => permitido a cualquier @DEST
+
+        if dst in hf_allowed_tx_shortnames:
+            return True
+
+        self._log(
+            f"[DENY] HF TX: destino '@{dst}' no permitido "
+            f"(permitidos: {','.join(sorted(hf_allowed_tx_shortnames))})",
+            0
+        )
+        return False
+
 
 
     def _send_with_ack(self, pkt: bytes, dst: str, msgid: int, seq: int, payload_len: int, dst_ax25: Optional[str] = None) -> bool:
@@ -770,12 +812,45 @@ class VaraApp:
         if m_at:
             mesh_dest = (m_at.group(1) or "").strip()
             rest = (m_at.group(2) or "").strip()
+           
             if not mesh_dest or not rest:
                 return
+            
+            
+            allowed = getattr(self, "hf_allowed_tx_shortnames", None)
+            dst_norm = mesh_dest.strip().upper().lstrip("@")
 
+            if allowed is not None and dst_norm not in allowed:
+                self.log(
+                    f"[DENY] HF TX: destino '@{dst_norm}' no permitido "
+                    f"(permitidos: {','.join(sorted(allowed))})",
+                    level=0
+                )
+                return
+            
+            
             relay_call = self.ax25_dst.strip().upper()
             if not relay_call:
                 self.log(self.var_text("err_invalid_format"), level=0)
+                return
+                
+            # --------------------------------------------------
+            # NUEVO CONTROL (HF TX): si hay lista permitida,
+            # NO emitir por HF si el destino @DEST no está permitido
+            # --------------------------------------------------
+            # Asumimos que has calculado algo como:
+            #   self.hf_allowed_tx_shortnames = set(...)  o None
+            allowed = getattr(self, "hf_allowed_tx_shortnames", None)
+            dst_norm = mesh_dest.strip().upper()
+
+            # Solo aplicamos el control si el usuario usó @DEST (estamos en esta rama)
+            # y solo si la flag está activa (allowed != None)
+            if allowed is not None and dst_norm not in allowed:
+                self.log(
+                    f"[DENY] HF TX: destino '@{dst_norm}' no permitido "
+                    f"(permitidos: {','.join(sorted(allowed))})",
+                    level=0
+                )
                 return
 
             # Log bonito: SRC > RELAY > DEST: msg
@@ -826,7 +901,19 @@ class VaraApp:
             if not relay_call or not mesh_dest:
                 self.log(self.var_text("err_invalid_format"), level=0)
                 return
+            
+            
+            allowed = getattr(self, "hf_allowed_tx_shortnames", None)
+            dst_norm = mesh_dest.strip().upper().lstrip("@")
 
+            if allowed is not None and dst_norm not in allowed:
+                self.log(
+                    f"[DENY] HF TX: destino '@{dst_norm}' no permitido "
+                    f"(permitidos: {','.join(sorted(allowed))})",
+                    level=0
+                )
+                return
+            
             # ---------------------------
             # LOG BONITO PARA RELAY
             # Queremos:
@@ -883,6 +970,23 @@ class VaraApp:
         # MODO NORMAL
         # --------------------------------------------------
         to_call = left.upper()
+        
+        # --------------------------------------------------
+        # HF TX policy (también para el caso "RELAY: @DEST msg")
+        # Si el mensaje que vas a mandar por HF empieza por @DEST,
+        # bloquea si DEST no está permitido por --hf-allow-tx-dest-shortname
+        # --------------------------------------------------
+        allowed = getattr(self, "hf_allowed_tx_shortnames", None)
+        m_cmd = re.match(r"^\s*@([A-Za-z0-9_!.-]{2,16})\s*[:,]?\s*(.+)\s*$", msg or "")
+        if m_cmd:
+            cmd_dest = (m_cmd.group(1) or "").strip().upper().lstrip("@")
+            if allowed is not None and cmd_dest not in allowed:
+                self.log(
+                    f"[DENY] HF TX: comando '@{cmd_dest}' no permitido "
+                    f"(permitidos: {','.join(sorted(allowed))})",
+                    level=0
+                )
+                return
 
         if to_call == "ALL":
             msgid = self.next_msgid()
@@ -1819,9 +1923,23 @@ class MeshBridge:
             if m_at:
                 dest = (m_at.group(1) or "").strip()
                 body = (m_at.group(2) or "").strip()
+                
                 if not dest or not body:
                     return
+                    
+                allowed = getattr(self, "hf_allowed_tx_shortnames", None)
+                dst_norm = mesh_dest.strip().upper().lstrip("@")
 
+                self.log(f"[DBG] HF_TX_FILTER allowed={allowed} dst={dst_norm}", level=0)
+
+                if allowed is not None and dst_norm not in allowed:
+                    self.log(
+                        f"[DENY] HF TX: destino '@{dst_norm}' no permitido "
+                        f"(permitidos: {','.join(sorted(allowed))})",
+                        level=0
+                    )
+                    return
+                    
                 relay_call = (self.vara_out_to or "ALL").strip().upper()
                 if relay_call == "ALL":
                     self.app.log(f"[WARN] @{dest} recibido pero vara_out_to=ALL; no puedo hacer relay", level=1)
@@ -2159,6 +2277,7 @@ def main():
     ap.add_argument("--mesh-host", default=None, help="Meshtastic IP[:PORT] (default 4403)")
     ap.add_argument("--mesh-dest-id", default=None, help="DestinationId (e.g. !abcdef01) to send to a specific node")
     ap.add_argument("--mesh-allow-dest-shortname", default=None, help="Comma-separated Meshtastic destination ShortNames allowed for relay (e.g. QXT3,QXT6). If omitted, any destination is allowed.")
+    ap.add_argument("--hf-allow-tx-dest-shortname",default=None,help="Comma-separated ShortNames allowed as HF TX destinations when using '@DEST ...' (e.g. QXT3,QXT6). ""If omitted, HF TX to any @DEST is allowed.")
 
     ap.add_argument("--mesh-channel-index", type=int, default=None, help="Meshtastic channel (index)")
     ap.add_argument("--mesh-channel-name", default=None, help="Meshtastic channel (name)")
@@ -2201,13 +2320,28 @@ def main():
         app.log(app.var_text("info_monitor_on"), level=1)
     
     # --mesh-allow-dest-shortname
-    # Permitir solo reenviar a determinados nodos, sino todos los nodos destino son permitodos
+    # Permitir solo reenviar a determinados nodos internos (desde Estacion HF a Malla), sino todos los nodos destino son permitodos
     allowed_shortnames = None
     if args.mesh_allow_dest_shortname:
         allowed_shortnames = {
             s.strip().upper()
             for s in args.mesh_allow_dest_shortname.split(",")
             if s.strip()}
+            
+            
+    # --hf-allow-tx-dest-shortname" 
+    # Permite solo emitir desde estacion HF para otra estacion si los nodos estan en la lista, sino hay opcion permite todos los destinos     
+    hf_allowed_tx_shortnames = None
+    if args.hf_allow_tx_dest_shortname:
+        hf_allowed_tx_shortnames = {
+            s.strip().upper().lstrip("@")
+            for s in args.hf_allow_tx_dest_shortname.split(",")
+            if s.strip()
+        }
+    
+    app.hf_allowed_tx_shortnames = hf_allowed_tx_shortnames
+    if hf_allowed_tx_shortnames:
+        app.log(f"[INFO] ✅ HF TX restricted to @dest: {', '.join(sorted(hf_allowed_tx_shortnames))}", level=1)
 
     
     mesh = None
