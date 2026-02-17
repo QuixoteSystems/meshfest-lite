@@ -1,18 +1,15 @@
-<img src="https://github.com/user-attachments/assets/0b4b4762-5eaf-4b14-a8ea-89b3aff7a322" width="450"></p>
+<p align="center"><img src="https://github.com/user-attachments/assets/0b4b4762-5eaf-4b14-a8ea-89b3aff7a322" width="450"></p>
+<p align="center">
+<a href="#application-summary">🇺🇸 Application Summary</a> •
+<a href="#sintaxis-english-version">Syntax</a> •
+<a href="#meshfest-lite--cli-reference">CLI Reference</a> •
+<a href="#architecture-diagram-hf--mesh-hybrid-model">Architecture</a><br>
+<p align="center">
+<a href="#resumen-en-castellano">🇪🇸 Resumen</a> •
+<a href="#sintaxis-version-en-castellano">Sintaxis y Ejemplos</a>
+  </p>
+</p>
 
-[Application Summary](#application-summary)
-
-[Sintaxis English Version](#sintaxis-english-version)
-
-[📖 MeshFest-Lite – CLI Reference](#meshfest-lite--cli-reference)
-
-[🧠 Architecture Diagram (HF ↔ Mesh Hybrid Model)](#architecture-diagram-hf--mesh-hybrid-model)
-
-# 🇪🇸 Índice
-
-[Resumen en castellano](#resumen-en-castellano)
-
-[Sintaxis Version en Castellano](#sintaxis-version-en-castellano)
 
 
 ---
@@ -36,7 +33,7 @@ MesHFest enables the creation of hybrid communication ecosystems where LoRa mesh
 
 ---
 
-# 🇬🇧 Sintaxis English Version
+# 🇬🇧 Sintaxis & Examples
 
 ## 1️⃣ Core HF / VARA Configuration
 
