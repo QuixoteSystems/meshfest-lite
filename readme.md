@@ -1,5 +1,5 @@
 ![meshfest-lite-v1](https://github.com/user-attachments/assets/47a2aec6-0193-45ea-89e2-839fcbd40c36)
-# MesHFest (Lightweight Meshtastic-to-HF communication bridge)
+# MesHFest (Meshtastic-to-HF communication bridge)
 ## Index
 
 
@@ -13,7 +13,7 @@
 
 ## **Application Summary**
 
-MesHFest-lite is a lightweight & simple communication bridge designed to interconnect Meshtastic networks with HF digital modes such as VARA HF (and still not JS8Call), enabling seamless message forwarding between radio and mesh infrastructures.
+MesHFest-lite is a lightweight & simple communication bridge designed to interconnect Meshtastic networks with HF (Designed especially for CB use) digital modes such as VARA HF (and still not JS8Call), enabling seamless message forwarding between radio and mesh infrastructures.
 
 The application acts as an intelligent gateway that can relay, format, acknowledge, and route messages between different technologies, allowing stations operating on HF to communicate with Meshtastic nodes and vice versa.
 
@@ -411,7 +411,7 @@ python meshfest-lite.py \
 
 ## 🇪🇸 **Resumen de la Aplicación**
 
-MesHFest es un puente de comunicaciones ligero diseñado para interconectar redes Meshtastic con modos digitales en HF como VARA HF (y todavía no JS8Call), permitiendo el reenvío transparente de mensajes entre infraestructuras de radio y redes Meshtastic.
+MesHFest es un puente de comunicaciones ligero diseñado para interconectar redes Meshtastic con modos digitales en HF (especialmente CB) como VARA HF (y todavía no JS8Call), permitiendo el reenvío transparente de mensajes entre infraestructuras de radio y redes Meshtastic.
 
 La aplicación actúa como una pasarela inteligente capaz de reenviar, formatear, confirmar y enrutar mensajes entre distintas tecnologías, permitiendo que estaciones en HF puedan comunicarse con nodos Meshtastic y viceversa.
 
