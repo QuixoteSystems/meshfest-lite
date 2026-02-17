@@ -460,7 +460,7 @@ It turns VARA into a **transparent transport layer**, not a session controller.
 
 ## 🇪🇸**Resumen de la Aplicación**
 
-MesHFest es un puente de comunicaciones ligero diseñado para interconectar redes Meshtastic con modos digitales en HF como VARA HF y JS8Call, permitiendo el reenvío transparente de mensajes entre infraestructuras de radio y redes mesh.
+MesHFest es un puente de comunicaciones ligero diseñado para interconectar redes Meshtastic con modos digitales en HF como VARA HF (y todavía no JS8Call), permitiendo el reenvío transparente de mensajes entre infraestructuras de radio y redes Meshtastic.
 
 La aplicación actúa como una pasarela inteligente capaz de reenviar, formatear, confirmar y enrutar mensajes entre distintas tecnologías, permitiendo que estaciones en HF puedan comunicarse con nodos Meshtastic y viceversa.
 
