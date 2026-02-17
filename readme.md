@@ -1,9 +1,9 @@
 <p align="center"><img src="https://github.com/user-attachments/assets/0b4b4762-5eaf-4b14-a8ea-89b3aff7a322" width="450"></p>
 <p align="center">
 <a href="#application-summary">🇺🇸 Application Summary</a> •
-<a href="#Sintaxis-&-Examples">Syntax & Examples</a> •
+  <a href="#-architecture-diagram-hf--mesh-hybrid-model">Architecture Diagram</a><br> •
+<a href="#sintaxis--examples">Syntax & Examples</a> •
 <a href="#meshfest-lite--cli-reference">CLI Reference</a> •
-<a href="#-architecture-diagram-hf--mesh-hybrid-model">Architecture Diagram</a><br>
 <p align="center">
 <a href="#resumen-en-castellano">🇪🇸 Resumen de la Aplicación</a> •
 <a href="#sintaxis-version-en-castellano">Sintaxis y Ejemplos</a>
