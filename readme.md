@@ -24,9 +24,9 @@ Key features include:
 - Callsign-aware routing logic
 - Lightweight and service-friendly architecture
 - Designed for experimentation, emergency comms, and hybrid RF networks
-- Send & Receive files from Station to Sation (not to Meshtastic)
+- Send and receive files from station to station (not to Meshtastic).
 
-MesHFest enables the creation of hybrid communication ecosystems where LoRa mesh and HF digital radio coexist and complement each other.
+MesHFest enables the creation of hybrid communication ecosystems where Meshtastic and HF digital radio coexist and complement each other.
 
 ---
 
@@ -65,17 +65,8 @@ MesHFest enables the creation of hybrid communication ecosystems where LoRa mesh
 # 🔎 Logical Flow
 
 ```
-LoRa (Meshtastic) <---> MeshFest-lite <---> VARA HF <------- HF ------> VARA HF <--->  MeshFest-lite <---> LoRa (Meshtastic)
+Meshtastic <---> MeshFest-lite <---> VARA HF ((( HF ))) VARA HF <--->  MeshFest-lite <---> Meshtastic
 ```
-
----
-
-# 🔐 Policy Model (Firewall Analogy)
-
-| Layer | Direction | Flag |
-|-------|-----------|------|
-| HF OUTPUT | LoRa → HF | `--hf-allow-tx-dest-shortname` |
-| MESH FORWARD | HF → LoRa | `--mesh-allow-dest-shortname` |
 
 ---
 
@@ -96,6 +87,7 @@ Access Layer:
 - Meshtastic interface (Serial / TCP)
 - Meshtastic Mesh
 
+
 ## Transport Model
 
 MeshFest-Lite uses:
@@ -114,6 +106,8 @@ It does **NOT** rely on VARA's internal ARQ session management, this allow to us
 ---
 
 # Sintaxis & Examples
+
+To exit the program, type `exit` or press `Ctrl+C`.
 
 ## 1️⃣ Core HF / VARA Configuration
 
@@ -283,7 +277,7 @@ VARA destination for traffic coming from Mesh.
 Default: `ALL`
 
 ```bash
---bridge-mesh-to-vara 30QXT3
+--bridge-mesh-to-vara EA1ABC
 ```
 
 ---
@@ -374,84 +368,17 @@ Interface language:
 
 ```bash
 python meshfest-lite.py \
-  --call 30QXT1 \
+  --call EA1ABC \
   --host 127.0.0.1 \
   --port 8100 \
   --bridge-mesh \
   --mesh-host 192.168.1.25:4403 \
   --mesh-want-ack \
-  --bridge-mesh-to-vara 30QXT3 \
-  --hf-allow-tx-dest-shortname QXT4 \
+  --bridge-mesh-to-vara EA9XYZ \
+  --hf-allow-tx-dest-shortname MSH4 \
   --verbose 2
 ```
 
-
-# 📖 MeshFest-Lite – CLI Reference
-
-
-To exit the program, type `exit` or press `Ctrl+C`.
-
-## 🛰 Core HF / VARA Options
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--call` | string | **required** | Your station callsign (e.g. EA1ABC) |
-| `--host` | string | `127.0.0.1` | VARA KISS TCP host |
-| `--port` | int | `8100` | VARA KISS TCP port |
-| `--axdst` | string | `APVARA` | AX.25 destination field (cosmetic only) |
-
----
-
-## 📡 Meshtastic Interface
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--mesh-serial` | string | `None` | Serial device (COMx or /dev/ttyUSB0) |
-| `--mesh-host` | string | `None` | Meshtastic IP[:PORT] (default port 4403) |
-| `--mesh-dest-id` | string | `None` | Destination NodeId (e.g. !abcdef01) |
-| `--mesh-channel-index` | int | `None` | Channel index |
-| `--mesh-channel-name` | string | `None` | Channel name |
-| `--mesh-want-ack` | flag | `False` | Request ACK when sending to specific node |
-
----
-
-## 🔒 Security & Policy Controls
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--mesh-allow-dest-shortname` | string (CSV) | `None` | Allowed Meshtastic shortnames for relay (HF → Mesh). If omitted, any destination is allowed |
-| `--hf-allow-tx-dest-shortname` | string (CSV) | `None` | Allowed `@DEST` commands for HF TX. If omitted, any `@DEST` is allowed |
-
----
-
-## 🔁 Bridge Configuration (VARA ↔ Mesh)
-
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--bridge-mesh` | flag | `False` | Enable Meshtastic ↔ VARA bridge |
-| `--bridge-mesh-to-vara` | string | `ALL` | VARA destination for traffic coming from Mesh |
-| `--bridge-varato-mesh-prefix` | string | `[VARA] ` | Prefix added to VARA → Mesh traffic |
-| `--bridge-meshto-vara-prefix` | string | `[MESH] ` | Prefix added to Mesh → VARA traffic |
-
----
-
-## 📊 Monitoring & Logging
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--monitor` | flag | `False` | Monitor mode (show readable traffic not addressed to you) |
-| `-v`, `--verbose` | int (0/1/2) | `1` | Log level (0=errors, 1=normal, 2=debug) |
-| `--log-mode` | enum | `console` | Log destination: `console`, `file`, `both` |
-| `--log-file` | string | `meshfest.log` | Log file path (used if log-mode includes file) |
-
----
-
-## 🌍 Language
-
-| Flag | Type | Default | Description |
-|------|------|---------|------------|
-| `--lang` | enum (`en`, `es`) | `en` | Interface language |
 
 ---
 
@@ -472,98 +399,15 @@ python meshfest-lite.py \
 
 ```bash
 python meshfest-lite.py \
-  --call 30QXT1 \
+  --call EA1ABC \
   --bridge-mesh \
   --mesh-host 192.168.1.25:4403 \
   --mesh-want-ack \
-  --bridge-mesh-to-vara 30QXT3 \
-  --mesh-allow-dest-shortname QXT3,QXT6 \
-  --hf-allow-tx-dest-shortname QXT4 \
+  --bridge-mesh-to-vara EA9XYZ \
+  --mesh-allow-dest-shortname MSH3,MSH6 \
+  --hf-allow-tx-dest-shortname MSH4 \
   --verbose 2
 ```
-
----
-
-# 🔁 Message Flow Examples
-
-## 1️⃣ Direct HF Message (Custom Reliable Mode)
-
-User input:
-```
-EA1XYZ: Hello
-```
-
-Flow:
-```
-User
-  ↓
-MeshFest
-  ↓
-AX.25 frame (T_MSG)
-  ↓
-VARA modem (audio transport)
-  ↓
-Remote station
-  ↓
-Custom ACK returned
-```
-
-Reliability is handled by:
-
-- `_send_with_ack()`
-- Custom ACK tracking
-- Application-level retransmission
-
----
-
-## 2️⃣ HF Relay to Mesh (Using @DEST)
-
-User input:
-```
-EA1ABC: @MSH1 test message
-```
-
-Flow:
-```
-Local User
-   ↓
-MeshFest
-   ↓
-AX.25 T_MSG frame
-   ↓
-HF Relay (EA1ABC)
-   ↓
-Relay parses ">MSH4:"
-   ↓
-Meshtastic node MSH4
-```
-
-Security control:
-
-- `--hf-allow-tx-dest-shortname`
-- `--mesh-allow-dest-shortname`
-
----
-
-## 3️⃣ Meshtastic to HF Forwarding
-
-```
-Meshtastic Node
-       ↓
-Meshtastic Interface
-       ↓
-MeshFest-lite Bridge
-       ↓
-AX.25 frame
-       ↓
-HF transmission
-```
-
-Transport reliability on HF:
-
-- Application-layer ACK
-- Configurable retries
-- Stop-and-wait logic
 
 ---
 
@@ -576,22 +420,6 @@ MeshFest-Lite file transfer uses:
 - Sequence numbers
 - Custom ACK handling
 - Retries
-
-## HF File Transfer Model
-
-```
-File
-  ↓
-Chunked into payload blocks
-  ↓
-Each block sent as T_MSG
-  ↓
-ACK received
-  ↓
-Next block
-```
-
-This is **application-controlled reliability**, independent of VARA ARQ.
 
 ---
 
@@ -630,26 +458,6 @@ It turns VARA into a **transparent transport layer**, not a session controller.
 
 ---
 
-## Deployment Modes
-
-| Mode | Description |
-|------|------------|
-| Transparent HF Node | AX.25 custom reliable messaging |
-| Controlled Relay | Policy-based forwarding |
-| Hybrid Gateway | HF ↔ Mesh bridge |
-| Secure Bridge | Allowlist filtering enabled |
-
----
-
-MeshFest-Lite is a:
-
-**Custom reliable messaging engine over HF + LoRa mesh integration layer**
-
-Not just a chat client, and not dependent on VARA’s native ARQ sessions.
-
-
----
-
 ## 🇪🇸**Resumen de la Aplicación**
 
 MesHFest es un puente de comunicaciones ligero diseñado para interconectar redes Meshtastic con modos digitales en HF como VARA HF y JS8Call, permitiendo el reenvío transparente de mensajes entre infraestructuras de radio y redes mesh.
@@ -673,7 +481,7 @@ Interactive chat and file transfer over VARA HF (KISS/TCP) with optional Meshtas
 
 ---
 
-# Sintaxis Versión en Castellano
+# Sintaxis y Ejemplos
 
 ## 1️⃣ Configuración HF / VARA
 
@@ -755,7 +563,7 @@ Solicitar ACK al enviar a un nodo específico.
 Limita qué nodos Meshtastic pueden recibir tráfico reenviado desde HF.
 
 ```bash
---mesh-allow-dest-shortname QXT3,QXT6
+--mesh-allow-dest-shortname MSH3,MSH6
 ```
 
 ---
@@ -765,19 +573,19 @@ Limita qué nodos Meshtastic pueden recibir tráfico reenviado desde HF.
 Limita qué comandos `@DEST` pueden transmitirse por HF.
 
 ```bash
---hf-allow-tx-dest-shortname QXT4
+--hf-allow-tx-dest-shortname MSH4
 ```
 
 Ejemplo:
 
 ```
-30QXT3: @QXT3 prueba
+EA1ABC: @MSH3 prueba
 ```
 
 Será bloqueado.
 
 ```
-30QXT3: @QXT4 prueba
+EA1ABC: @MSH4 prueba
 ```
 
 Será transmitido.
@@ -833,6 +641,5 @@ Archivo de log.
 ### `--lang`
 Idioma de la interfaz (`es` o `en`).
 
----
 
 
