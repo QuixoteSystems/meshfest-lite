@@ -31,7 +31,7 @@ MesHFest enables the creation of hybrid communication ecosystems where Meshtasti
 ---
 
 
-# 🧠 Architecture Diagram (HF ↔ Mesh Hybrid Model)
+## 🧠 Architecture Diagram (HF ↔ Mesh Hybrid Model)
 
 
 ```
@@ -62,7 +62,7 @@ MesHFest enables the creation of hybrid communication ecosystems where Meshtasti
 
 ---
 
-# 🔎 Logical Flow
+### 🔎 Logical Flow
 
 ```
 Meshtastic <---> MeshFest-lite <---> VARA HF ((( HF ))) VARA HF <--->  MeshFest-lite <---> Meshtastic
@@ -70,7 +70,7 @@ Meshtastic <---> MeshFest-lite <---> VARA HF ((( HF ))) VARA HF <--->  MeshFest-
 
 ---
 
-# 📡 Transport Stack (Top → Bottom)
+### 📡 Transport Stack (Top → Bottom)
 
 HF Backbone:
 - VARA as modem (transport only)
@@ -88,7 +88,7 @@ Access Layer:
 - Meshtastic Mesh
 
 
-## Transport Model
+### Transport Model
 
 MeshFest-Lite uses:
 
@@ -107,7 +107,7 @@ It does **NOT** rely on VARA's internal ARQ session management, this allow to us
 
 ---
 
-# 📦 File Transfer Workflow (Custom Reliable Layer)
+### 📦 File Transfer Workflow (Custom Reliable Layer)
 
 MeshFest-Lite file transfer uses:
 
@@ -119,9 +119,9 @@ MeshFest-Lite file transfer uses:
 
 ---
 
-# 🧩 Advanced Usage / Network Design Notes
+## 🧩 Advanced Usage / Network Design Notes
 
-## Custom Reliability Layer
+### Custom Reliability Layer
 
 MeshFest-Lite implements its own:
 
@@ -140,7 +140,7 @@ This allows:
 
 ---
 
-## Why Not Native VARA ARQ?
+### Why Not Native VARA ARQ?
 
 Using KISS + custom protocol allows:
 
@@ -151,9 +151,10 @@ Using KISS + custom protocol allows:
 - Hybrid mesh/HF policy enforcement
 
 It turns VARA into a **transparent transport layer**, not a session controller.
+
 ---
 
-# Sintaxis & Examples
+## Sintaxis & Examples
 
 To exit the program, type `exit` or press `Ctrl+C`.
 
@@ -484,7 +485,7 @@ Interactive chat and file transfer over VARA HF (KISS/TCP) with optional Meshtas
 
 ---
 
-# Sintaxis y Ejemplos
+## Sintaxis y Ejemplos
 
 ## 1️⃣ Configuración HF / VARA
 
