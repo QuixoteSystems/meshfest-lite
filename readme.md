@@ -160,8 +160,8 @@ To exit the program, type `exit` or press `Ctrl+C`.
 
 ## 1️⃣ Core HF / VARA Configuration
 
-### `--call` (required)
-Your station callsign.
+
+- Your station callsign: `--call [CALLSIGN] (required)`
 
 Example:
 ```bash
@@ -169,94 +169,76 @@ Example:
 --call EA1ABC
 ```
 
----
 
-### `--host`
-KISS TCP host (usually VARA running locally).  
-Default: `127.0.0.1`
 
+- KISS TCP host (usually VARA running locally).  `--host [IP]` . Default: `127.0.0.1`
+Example:
 ```bash
 --host 127.0.0.1
 ```
 
----
-
-### `--port`
-KISS TCP port used by VARA.  
-Default: `8100`
-
+ 
+- KISS TCP port used by VARA.  `--port [1234]` . Default: `8100`
+Example:
 ```bash
 --port 8100
 ```
 
 ---
 
-### `--axdst`
-AX.25 destination field (cosmetic only).  
-Default: `APVARA`
 
+- AX.25 destination field (cosmetic only).  `--axdst [APP_NAME]` . Default: `APVARA`
+Example
 ```bash
---axdst APVARA
+--axdst VARA-HF
 ```
 
 ---
 
 ## 2️⃣ Meshtastic Interface Configuration
 
-### `--mesh-serial`
-Serial device for Meshtastic.
-
+- Serial device for Meshtastic. `--mesh-serial [COM]`
+Examples:
+Linux:
 ```bash
 --mesh-serial /dev/ttyUSB0
 ```
-
 Windows:
 ```bash
 --mesh-serial COM5
 ```
 
----
+- Connect to Meshtastic via TCP.  `--mesh-host [IP:PORT]` . Default port: `4403`
 
-### `--mesh-host`
-Connect to Meshtastic via TCP.  
-Default port: `4403`
-
+Example:
 ```bash
 --mesh-host 192.168.1.25:4403
 ```
 
----
 
-### `--mesh-dest-id`
-Send directly to a specific node ID.
-
+- Send directly to a specific node ID. `--mesh-dest-id [!aaaaaaa]` . 
+Example:
 ```bash
 --mesh-dest-id !abcdef01
 ```
 
----
 
-### `--mesh-channel-index`
-Select channel by index.
-
+- Select channel by index. `--mesh-channel-index [1]`
+Example:
 ```bash
 --mesh-channel-index 1
 ```
 
----
 
-### `--mesh-channel-name`
-Select channel by name.
-
+- Select channel by name. `--mesh-channel-name [ChannelName]`
+Example:
 ```bash
 --mesh-channel-name "MediumFast"
 ```
 
----
 
-### `--mesh-want-ack`
-Request ACK when sending to a specific node.
-
+- Request ACK when sending to a specific node. `--mesh-want-ack`
+Example:
 ```bash
 --mesh-want-ack
 ```
@@ -265,27 +247,20 @@ Request ACK when sending to a specific node.
 
 ## 3️⃣ Security & Policy Controls
 
-### `--mesh-allow-dest-shortname`
 
-Restricts which Meshtastic shortnames can be used as relay destinations (HF → Mesh).
-
+- Restricts which Meshtastic shortnames can be used as relay destinations (HF → Mesh). `--mesh-allow-dest-shortname [MSH]`  . If omitted, any destination is allowed.
+Example:
 ```bash
 --mesh-allow-dest-shortname MSH3,MSH6
 ```
 
-If omitted, any destination is allowed.
-
----
-
-### `--hf-allow-tx-dest-shortname`
-
-Restricts which `@DEST` commands can be transmitted over HF.
-
+- Restricts which `@DEST` commands can be transmitted over HF. `--hf-allow-tx-dest-shortname [MSH]`
+Example:
 ```bash
 --hf-allow-tx-dest-shortname MSH4
 ```
 
-Example:
+Practical Example:
 
 If running with:
 
@@ -293,7 +268,7 @@ If running with:
 --hf-allow-tx-dest-shortname MSH4
 ```
 
-Then:
+Then If you write o CLI:
 
 ```
 EA1ABC: @MSH3 test
@@ -301,7 +276,7 @@ EA1ABC: @MSH3 test
 
 Will be blocked.
 
-But:
+But If you write on CLI:
 
 ```
 EA1ABC: @MSH4 test
@@ -313,37 +288,29 @@ Will be transmitted.
 
 ## 4️⃣ Bridge Configuration (VARA ↔ Meshtastic)
 
-### `--bridge-mesh`
-Enable Meshtastic ↔ VARA bridging.
 
+- Enable Meshtastic ↔ VARA bridging. `--bridge-mesh`
+Example:
 ```bash
 --bridge-mesh
 ```
 
----
 
-### `--bridge-mesh-to-vara`
-VARA destination for traffic coming from Mesh.  
-Default: `ALL`
-
+- VARA destination for traffic coming from Mesh.  `--bridge-mesh-to-vara [CALLSIGN]` . Default: `ALL`
+Example:
 ```bash
 --bridge-mesh-to-vara EA1ABC
 ```
 
----
 
-### `--bridge-varato-mesh-prefix`
-Prefix for traffic from VARA to Mesh.
-
+- Prefix for traffic from VARA to Mesh. `--bridge-varato-mesh-prefix`
+Example:
 ```bash
---bridge-varato-mesh-prefix "[VARA HF] "
+--bridge-varato-mesh-prefix "VARA HF "
 ```
 
----
-
-### `--bridge-meshto-vara-prefix`
-Prefix for traffic from Mesh to VARA.
-
+- Prefix for traffic from Mesh to VARA. `--bridge-meshto-vara-prefix` 
+Example:
 ```bash
 --bridge-meshto-vara-prefix "MESHTASTIC "
 ```
@@ -352,47 +319,38 @@ Prefix for traffic from Mesh to VARA.
 
 ## 5️⃣ Monitoring & Logging
 
-### `--monitor`
-Monitor mode (shows readable traffic not addressed to you).
 
+- Monitor mode (shows readable traffic not addressed to you). `--monitor`
+Example:
 ```bash
 --monitor
 ```
 
----
 
-### `-v / --verbose`
-
-Log level:
+- Log level `-v / --verbose [num]`:
 
 - `0` = errors  
 - `1` = normal  
 - `2` = debug  
 
+Example:
 ```bash
 -v 2
 ```
 
----
 
-### `--log-mode`
+- Logging in a file, console or both. `--log-mode [OPTION]` Options:
+  - `console`
+  - `file`
+  - `both`
 
-Options:
-- `console`
-- `file`
-- `both`
-
+Example:
 ```bash
 --log-mode both
 ```
 
----
-
-### `--log-file`
-
-Log file path.  
-Default: `meshfest.log`
-
+- Log file path.  `--log-file [file.log]`. Default: `meshfest.log`
+Example:
 ```bash
 --log-file mylog.txt
 ```
@@ -401,13 +359,12 @@ Default: `meshfest.log`
 
 ## 6️⃣ Language
 
-### `--lang`
 
-Interface language:
+Interface language: `--lang [LANG}` . Default: `en`. Options: English (en) or Spanish (es).
 
 - `en`
 - `es`
-
+Example:
 ```bash
 --lang es
 ```
@@ -426,6 +383,9 @@ python meshfest-lite.py \
   --mesh-want-ack \
   --bridge-mesh-to-vara EA9XYZ \
   --hf-allow-tx-dest-shortname MSH4 \
+  --log-mode both \
+  --log-file mylog.txt \
+  --monitor \
   --verbose 2
 ```
 
