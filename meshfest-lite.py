@@ -1,5 +1,37 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
+# ┌──────────────────────────────────────────────────────────────┐
+# │                         MeshFest-Lite                        │
+# │        Meshtastic ↔ HF Lightweight Communication             │
+# │                         Bridge Engine                        │
+# └──────────────────────────────────────────────────────────────┘
+#
+# Author:      Quixote Network
+# Project:     MeshFest-Lite
+# Version:     1.0
+# License:     MIT
+#
+# Description:
+#   MeshFest-Lite is a lightweight bridge designed to interconnect
+#   Meshtastic mesh networks with HF digital modes such as VARA HF.
+#
+#   The application provides:
+#     • Direct Message (DM) forwarding
+#     • Intelligent RELAY formatting (@DEST → RELAY > DEST:)
+#     • ACK handling (Stop-and-Wait logic)
+#     • Optional destination filtering
+#     • Anti-echo protection
+#     • Clean logging and routing control
+#
+#   This software is intended for experimental and educational use
+#   within permitted radio services. Ensure compliance with your
+#   local telecommunications regulations before operation.
+#
+# ----------------------------------------------------------------
+#   Quixote Network — Decentralized Communications Architecture
+# ----------------------------------------------------------------
+#
 
 import argparse
 import os
@@ -92,6 +124,7 @@ TEXTS = {
     Comandos:
       ALL: <mensaje>                 Enviar broadcast (sin ACK)
       CALLSIGN: <mensaje>            Enviar directo (con ACK)
+      CALLSIGN > NODO: <mensaje>     Enviar directo a Nodo (con ACK)
       SEND <CALLSIGN> <ruta>         Enviar fichero
       WHOAMI                         Muestra tu callsign
       HELP                           Esta ayuda
@@ -139,6 +172,7 @@ TEXTS = {
     Commands:
       ALL: <message>                 Send broadcast (no ACK)
       CALLSIGN: <message>            Send direct message (with ACK)
+      CALLSIGN > NODE: <message>     Send direct to Node (wih ACK)
       SEND <CALLSIGN> <path>         Send file
       WHOAMI                         Show your callsign
       HELP                           Show this help
@@ -156,7 +190,7 @@ TEXTS = {
         "warn_mesh_not_ready": "[WARN] ⚠️ Meshtastic did not confirm readiness, continuing anyway...",
         "warn_mesh_not_ready_retry": "[WARN] ⚠️ Meshtastic not ready yet ({error}) attempt {attempt}/3",
         "err_bridge_mesh_missing_iface": "[ERR] ❌ For --bridge-mesh you must specify --mesh-serial or --mesh-host",
-        "info_monitor_on": "[INFO] ✅ Monitor ON: I will display messages even if not addressed to me/ALL (no ACK)",
+        "info_monitor_on": "[INFO] ✅ Monitor ON: It will display messages even if not addressed to me/ALL (no ACK)",
         "err_no_kiss_connection": "[ERR] ❌ No KISS connection available. Exiting.",
         "warn_nodeid_not_found": "[ERR] ❌ NodeId for '{dest}' not found in DB (iface.nodes). DM not sent.",
         "warn_forward_incomplete": "[WARN] ⚠ Incomplete forward from {src}: {text}",
@@ -1821,15 +1855,14 @@ class MeshBridge:
                         myid = str(getattr(ln, "nodeId", "") or "").strip()
                     except Exception:
                         myid = None
-                    
             except Exception:
                 pass
 
             from_id = packet.get("fromId")
-
             if myid and from_id and str(from_id).strip() == myid:
                 # Es un mensaje generado por este mismo bridge → no reenviar
                 return
+
             # Si no sé quién soy, no hago nada
             if mynum is None and not myid:
                 return
@@ -1869,14 +1902,7 @@ class MeshBridge:
                     pass
 
             if not dm_to_me:
-                # Debug opcional (descomenta si quieres ver por qué no pasa el filtro)
-                # self.app.log(f"[DBG MESH RX] descartado: to={to_val} toId={to_id} mynum={mynum} myid={myid}", level=2)
                 return
-
-            # Log para mostrar
-            #self.app.log(
-            #    f"[MESH->VARA DM] from={packet.get('fromId') or packet.get('from')} "
-            #    f"to={to_id or to_val}",level=1)
 
             # -------- Extraer texto --------
             decoded = packet.get("decoded") or {}
@@ -1893,7 +1919,7 @@ class MeshBridge:
             txt = txt.strip()
             if not txt:
                 return
-            
+
             # Obtener origen en formato humano (shortName si existe)
             from_id = packet.get("fromId") or ""
             src_label = self.mesh.shortname_from_id(from_id) or str(from_id)
@@ -1907,15 +1933,17 @@ class MeshBridge:
             # "TX next hop": a dónde lo vamos a sacar por VARA
             tx_next = (self.vara_out_to or "ALL").strip().upper()
 
-            self.app.log(f"[{self.app.mesh_name} -> {self.app.vara_name}] {src_label} -> {rx_local} : {clean_txt}", level=1)
-            # (opcional, si quieres también ver el siguiente salto)
+            self.app.log(
+                f"[{self.app.mesh_name} -> {self.app.vara_name}] {src_label} -> {rx_local} : {clean_txt}",
+                level=1
+            )
+            # (opcional)
             # self.app.log(f"[{self.app.mesh_name}->{self.app.vara_name}] {src_label} -> {rx_local} (to {tx_next}) : {clean_txt}", level=1)
-
 
             # -------- Anti-eco --------
             if self.vara_to_mesh_prefix and txt.startswith(self.vara_to_mesh_prefix):
                 return
-            
+
             # ---------------------------------------------------------
             # PRIORIDAD: @DEST ...  => crear RELAY "RELAY > DEST: ..."
             #  - DEST es shortname (o NodeId si empieza por "!")
@@ -1928,42 +1956,74 @@ class MeshBridge:
             if m_at:
                 dest = (m_at.group(1) or "").strip()
                 body = (m_at.group(2) or "").strip()
-                
+
                 if not dest or not body:
                     return
-                    
-                allowed = getattr(self, "hf_allowed_tx_shortnames", None)
-                dst_norm = mesh_dest.strip().upper().lstrip("@")
 
-                self.log(f"[DBG] HF_TX_FILTER allowed={allowed} dst={dst_norm}", level=0)
+                # ---------------------------
+                # ✅ MEJORA: normaliza allowed
+                # - None => no filtra
+                # - "QXT3,QXT6" => {"QXT3","QXT6"}
+                # - ["QXT3","QXT6"] / set(...) => {"QXT3","QXT6"}
+                # ---------------------------
+                raw_allowed = getattr(self, "hf_allowed_tx_shortnames", None)
 
-                if allowed is not None and dst_norm not in allowed:
-                    self.log(
+                allowed_set = None
+                try:
+                    if raw_allowed is None:
+                        allowed_set = None
+                    elif isinstance(raw_allowed, str):
+                        parts = [p.strip().upper() for p in raw_allowed.split(",") if p.strip()]
+                        allowed_set = set(parts) if parts else set()
+                    elif isinstance(raw_allowed, (list, tuple, set)):
+                        allowed_set = set(str(x).strip().upper() for x in raw_allowed if str(x).strip())
+                    else:
+                        # cualquier otra cosa: lo convertimos a string y tratamos como CSV
+                        s = str(raw_allowed)
+                        parts = [p.strip().upper() for p in s.split(",") if p.strip()]
+                        allowed_set = set(parts) if parts else set()
+                except Exception:
+                    # Si algo va mal, no filtramos para no romper RX
+                    allowed_set = None
+
+                # destino normalizado para el filtro (shortname)
+                dst_norm = dest.strip().upper().lstrip("@")
+
+                # Si es NodeId (!abcd1234), normalmente NO aplica filtro por shortname
+                # (puedes cambiarlo si quieres filtrar también NodeId)
+                is_nodeid = dst_norm.startswith("!")
+
+                self.app.log(f"[DEBUG] HF_TX_FILTER allowed={allowed_set} dst={dst_norm}", level=2)
+
+                if (allowed_set is not None) and (not is_nodeid) and (dst_norm not in allowed_set):
+                    self.app.log(
                         f"[DENY] HF TX: destino '@{dst_norm}' no permitido "
-                        f"(permitidos: {','.join(sorted(allowed))})",
+                        f"(permitidos: {','.join(sorted(allowed_set))})",
                         level=0
                     )
                     return
-                    
+
                 relay_call = (self.vara_out_to or "ALL").strip().upper()
                 if relay_call == "ALL":
                     self.app.log(f"[WARN] @{dest} recibido pero vara_out_to=ALL; no puedo hacer relay", level=1)
                     return
 
-                # Opción: normaliza DEST a mayúsculas si es shortname
-                # Si es NodeId tipo "!abcd1234" lo dejamos tal cual
+                # Normaliza DEST a mayúsculas si es shortname; si es NodeId "!abcd" lo dejamos tal cual
                 dest_norm = dest if dest.startswith("!") else dest.upper()
 
+                origin = src_label.strip().upper()   # ejemplo: QXT6
+                relay = relay_call.strip().upper()   # ejemplo: 30QXT1
+
                 # Esto activa el modo RELAY en VaraApp.send_text_line()
-                #self.app.send_text_line(f"{relay_call} > {dest_norm}: {body}")
-                origin = src_label.strip().upper()          # QXT6
-                relay  = relay_call.strip().upper()         # 30QXT1
                 self.app.send_text_line(f"{relay_call} > {dest_norm}: [{origin}>{relay}] {body}")
 
-                self.app.log(f"[{self.app.mesh_name} -> {self.app.vara_name} RELAY] {src_label} -> {relay_call} > {dest_norm}: {body}", level=1)
+                self.app.log(
+                    f"[{self.app.mesh_name} -> {self.app.vara_name} RELAY] "
+                    f"{src_label} -> {relay_call} > {dest_norm}: {body}",
+                    level=1
+                )
                 return
 
-            
             # -------- Reenvio a VARA --------
             m = AT_CALL_RE.match(txt)
             if m:
@@ -1972,29 +2032,23 @@ class MeshBridge:
                 if not body:
                     return
 
-                # Relay configurado (si existe)
                 relay_call = (
                     (getattr(self, "bridge_mesh_to_vara", None) or getattr(self.app, "bridge_mesh_to_vara", None))
                     or getattr(self, "vara_out_to", None)
                 )
                 relay_call = (str(relay_call).strip().upper() if relay_call else "")
 
-                # Origen real en formato humano (ya lo calculas antes como src_label)
                 origin = src_label.strip().upper()
 
                 if relay_call and relay_call != "ALL":
-                    # Formato final: QXT3>30QXT3: mensaje
                     payload = f"{origin}>{relay_call}: {body}"
                     out_line = f"{relay_call}: {payload}"
                 else:
-                    # Sin relay → envío directo
                     payload = f"{origin}: {body}"
                     out_line = f"{to_call}: {payload}"
 
                 self.app.send_text_line(out_line)
                 return
-
-
 
             if self.vara_out_to == "ALL":
                 out_line = f"ALL: {txt}".strip()
@@ -2005,6 +2059,7 @@ class MeshBridge:
 
         except Exception as e:
             self.app.log(f"[ERR] ❌ MeshBridge RX {self.app.mesh_name}  error: {e}", level=0)
+
 
 
     def _resolve_mesh_destination_id(self, dest: str):
@@ -2452,7 +2507,7 @@ def main():
     while not stop_evt.is_set():
         time.sleep(0.2)
     
-    app.log("\nLeaving MesHFest-lite...\n")
+    app.log("📴 Stopping MesHFest-lite...\n")
     app.kiss.close()
     app.close()
     
