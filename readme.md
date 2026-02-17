@@ -1,5 +1,5 @@
 ![meshfest-lite-v1](https://github.com/user-attachments/assets/47a2aec6-0193-45ea-89e2-839fcbd40c36)
-
+# MesHFest (Lightweight Meshtastic-to-HF communication bridge)
 ## Index
 
 
@@ -19,7 +19,7 @@ The application acts as an intelligent gateway that can relay, format, acknowled
 MesHFest-lite is a simplified version (one file) designed to run as a service or as a simple bridge/chat, making it ideal for unattended stations, portable deployments, or minimal setups where stability and low resource usage are key.
 
 Key features include:
-- Bidirectional message bridging (Mesh <-> HF)
+- Bidirectional message bridging (Meshtastic <-> HF)
 - Automatic forwarding and acknowledgment handling
 - Callsign-aware routing logic
 - Lightweight and service-friendly architecture
@@ -62,10 +62,17 @@ MesHFest enables the creation of hybrid communication ecosystems where Meshtasti
 
 ---
 
-### 🔎 Logical Flow
+### 🔎 Logical Flows
 
 ```
-Meshtastic <---> MeshFest-lite <---> VARA HF ((( HF ))) VARA HF <--->  MeshFest-lite <---> Meshtastic
+Case 1 (Meshtastic to Meshtasic Bridge) -> send / receive messages:
+Meshtastic <---> MesHFest-lite <---> VARA HF ((( HF ))) VARA HF <---> MesHFest-lite <---> Meshtastic
+
+Case 2 (MeshFest Station to Meshtastic) -> send / receive messages:
+MeshFest-lite <---> VARA HF ((( HF ))) VARA HF <---> MeshFest-lite <---> Meshtastic
+
+Case 3 (MesHFest Station to MesHFest Station) -> send / receive messages and files:
+MesHFest-lite <---> VARA HF ((( HF ))) VARA HF <---> MeshFest-lite
 ```
 
 ---
@@ -103,7 +110,6 @@ MeshFest-Lite uses:
 
 It does **NOT** rely on VARA's internal ARQ session management, this allow to use transceivers without CAT control, just using VOX.
 
----
 
 ---
 
@@ -160,212 +166,186 @@ To exit the program, type `exit` or press `Ctrl+C`.
 
 ## 1️⃣ Core HF / VARA Configuration
 
-
 - Your station callsign: `--call [CALLSIGN] (required)`
 
-Example:
-```bash
+  Example:
+  ```bash
+  --call EA1ABC
+  ```
 
---call EA1ABC
-```
+- KISS TCP host (usually VARA running locally).  `--host [IP]` . Default: `127.0.0.1`.
 
-
-
-- KISS TCP host (usually VARA running locally).  `--host [IP]` . Default: `127.0.0.1`
-Example:
-```bash
---host 127.0.0.1
-```
-
+  Example:
+  ```bash
+  --host 127.0.0.1
+  ```
  
-- KISS TCP port used by VARA.  `--port [1234]` . Default: `8100`
-Example:
-```bash
---port 8100
-```
+- KISS TCP port used by VARA.  `--port [1234]` . Default: `8100`.
+  
+  Example:
+  ```bash
+  --port 8100
+  ```
 
----
-
-
-- AX.25 destination field (cosmetic only).  `--axdst [APP_NAME]` . Default: `APVARA`
-Example
-```bash
---axdst VARA-HF
-```
+- AX.25 destination field (cosmetic only).  `--axdst [APP_NAME]` . Default: `APVARA`.
+  
+  Example:
+  ```bash
+  --axdst VARA-HF
+  ```
 
 ---
 
 ## 2️⃣ Meshtastic Interface Configuration
 
 - Serial device for Meshtastic. `--mesh-serial [COM]`
-Examples:
-Linux:
-```bash
---mesh-serial /dev/ttyUSB0
-```
-Windows:
-```bash
---mesh-serial COM5
-```
+  
+  Examples:
+    Linux:
+    ```bash
+    --mesh-serial /dev/ttyUSB0
+    ```
+    Windows:
+    ```bash
+    --mesh-serial COM5
+    ```
 
-- Connect to Meshtastic via TCP.  `--mesh-host [IP:PORT]` . Default port: `4403`
+- Connect to Meshtastic via TCP.  `--mesh-host [IP:PORT]` . Default port: `4403`.
 
-Example:
-```bash
---mesh-host 192.168.1.25:4403
-```
+  Example:
+  ```bash
+  --mesh-host 192.168.1.25:4403
+  ```
 
+- Send directly to a specific node ID. `--mesh-dest-id [!aaaaaaa]` .
+  
+  Example:
+  ```bash
+  --mesh-dest-id !abcdef01
+  ```
 
-- Send directly to a specific node ID. `--mesh-dest-id [!aaaaaaa]` . 
-Example:
-```bash
---mesh-dest-id !abcdef01
-```
+- Select channel by index. `--mesh-channel-index [1]`.
+  
+  Example:
+  ```bash
+  --mesh-channel-index 1
+  ```
 
+- Select channel by name. `--mesh-channel-name [ChannelName]`.
 
-- Select channel by index. `--mesh-channel-index [1]`
-Example:
-```bash
---mesh-channel-index 1
-```
+  Example:
+  ```bash
+  --mesh-channel-name "MediumFast"
+  ```
 
+- Request ACK when sending to a specific node. `--mesh-want-ack`.
 
-- Select channel by name. `--mesh-channel-name [ChannelName]`
-Example:
-```bash
---mesh-channel-name "MediumFast"
-```
-
-
-- Request ACK when sending to a specific node. `--mesh-want-ack`
-Example:
-```bash
---mesh-want-ack
-```
+  Example:
+  ```bash
+  --mesh-want-ack
+  ```
 
 ---
 
-## 3️⃣ Security & Policy Controls
-
+## 3️⃣ Security & Policy Controls (Firewall)
 
 - Restricts which Meshtastic shortnames can be used as relay destinations (HF → Mesh). `--mesh-allow-dest-shortname [MSH]`  . If omitted, any destination is allowed.
-Example:
-```bash
---mesh-allow-dest-shortname MSH3,MSH6
-```
 
-- Restricts which `@DEST` commands can be transmitted over HF. `--hf-allow-tx-dest-shortname [MSH]`
-Example:
-```bash
---hf-allow-tx-dest-shortname MSH4
-```
+  Example:
+  ```bash
+  --mesh-allow-dest-shortname MSH3,MSH6
+  ```
 
- - Practical Example:
+- Restricts which `@DEST` commands can be transmitted over HF. `--hf-allow-tx-dest-shortname [MSH]`.
+  
+  Example:
+  ```bash
+  --hf-allow-tx-dest-shortname MSH4
+  ```
 
-    If running with:
+  - Practical Example:
 
-    ```bash
-     --hf-allow-tx-dest-shortname MSH4
-     ```
+    If running with: ```--hf-allow-tx-dest-shortname MSH4```
 
-    Then If you write on CLI:
+    Then If you write on CLI: ``` EA1ABC > @MSH3: test  ``` Will be blocked.
 
-   ```
-   EA1ABC > @MSH3: test
-   ```
-
-   Will be blocked.
-
-   But If you write on CLI:
-
-   ```
-   EA1ABC > @MSH4: test
-    ```
-
-   Will be transmitted.
+    But If you write on CLI:  ``` EA1ABC > @MSH4: test ``` Will be transmitted.
 
 ---
 
 ## 4️⃣ Bridge Configuration (VARA ↔ Meshtastic)
 
 
-- Enable Meshtastic ↔ VARA bridging. `--bridge-mesh`
-Example:
-```bash
---bridge-mesh
-```
+- Enable Meshtastic ↔ VARA bridging. `--bridge-mesh`.
+  
+  Example:
+  ```bash
+  --bridge-mesh
+  ```
 
+- VARA destination for traffic coming from Mesh.  `--bridge-mesh-to-vara [CALLSIGN]` . Default: `ALL`.
 
-- VARA destination for traffic coming from Mesh.  `--bridge-mesh-to-vara [CALLSIGN]` . Default: `ALL`
-Example:
-```bash
---bridge-mesh-to-vara EA1ABC
-```
+  Example:
+  ```bash
+  --bridge-mesh-to-vara EA1ABC
+  ```
 
-- Prefix for traffic from VARA to Mesh. `--bridge-varato-mesh-prefix`
-Example:
-```bash
---bridge-varato-mesh-prefix "VARA HF "
-```
+- Prefix for traffic from VARA to Mesh. `--bridge-varato-mesh-prefix`.
 
-- Prefix for traffic from Mesh to VARA. `--bridge-meshto-vara-prefix` 
-Example:
-```bash
---bridge-meshto-vara-prefix "MESHTASTIC "
-```
+  Example:
+  ```bash
+  --bridge-varato-mesh-prefix "VARA HF"
+  ```
+
+- Prefix for traffic from Mesh to VARA. `--bridge-meshto-vara-prefix`.
+
+  Example:
+  ```bash
+  --bridge-meshto-vara-prefix "MESHTASTIC"
+  ```
 
 ---
 
 ## 5️⃣ Monitoring & Logging
 
+- Monitor mode (shows readable traffic not addressed to you). `--monitor`.
 
-- Monitor mode (shows readable traffic not addressed to you). `--monitor`
-Example:
-```bash
---monitor
-```
+  Example:
+  ```bash
+  --monitor
+  ```
 
-- Log level `-v / --verbose [num]`:
+- Log level `-v / --verbose [num]`: `0` = errors  `1` = normal   `2` = debug  
 
- - `0` = errors  
- - `1` = normal  
- - `2` = debug  
+  Example:
+  ```bash
+  -v 2
+  ```
 
-Example:
-```bash
--v 2
-```
+- Logging in a file, console or both. `--log-mode [OPTION]` Options: `console file both`
 
+  Example:
+  ```bash
+  --log-mode both
+  ```
 
-- Logging in a file, console or both. `--log-mode [OPTION]` Options:
-  - `console`
-  - `file`
-  - `both`
-
-Example:
-```bash
---log-mode both
-```
-
-- Log file path.  `--log-file [file.log]`. Default: `meshfest.log`. To use this flag you need activate file logging with `--log-mode file` or `--log-mode both`
-Example:
-```bash
---log-file mylog.txt
-```
+- Log file path.  `--log-file [file.log]`. Default: `meshfest.log`. To use this flag you need activate file logging with `--log-mode file` or `--log-mode both`.
+  
+  Example:
+  ```bash
+  --log-file mylog.txt
+  ```
 
 ---
 
 ## 6️⃣ Language
 
+Interface language: `--lang [LANG}` . Default: `en`. Options: English `en` or Spanish `es`.
 
-Interface language: `--lang [LANG}` . Default: `en`. Options: English (en) or Spanish (es).
-
-- `en`
-- `es`
-Example:
-```bash
---lang es
-```
+  Example:
+  ```bash
+  --lang es
+  ```
 
 ---
 
@@ -378,9 +358,12 @@ python meshfest-lite.py \
   --port 8100 \
   --bridge-mesh \
   --mesh-host 192.168.1.25:4403 \
+  --bridge-meshto-vara-prefix "MESHTASTIC" \
+  --bridge-varato-mesh-prefix "VARA HF" \
   --mesh-want-ack \
   --bridge-mesh-to-vara EA9XYZ \
-  --hf-allow-tx-dest-shortname MSH4 \
+  --mesh-allow-dest-shortname MSH3,MSH6 \
+  --hf-allow-tx-dest-shortname MSH4, MSH5 \
   --log-mode both \
   --log-file mylog.txt \
   --monitor \
@@ -392,7 +375,8 @@ python meshfest-lite.py \
 
 # 🧪 Example Configurations
 
-## Minimal HF Mode
+## Minimal HF Mode (MesHFest Station)
+Ideal for communicating with other MeshFest stations and MeshFest Meshtastic bridges.
 
 ```bash
 python meshfest-lite.py \
@@ -401,9 +385,8 @@ python meshfest-lite.py \
   --port 8100
 ```
 
----
 
-## Full Bridge with Security Policy
+## Full Bridge with Security Policy (Inbound & Outbond Firewall)
 
 ```bash
 python meshfest-lite.py \
@@ -414,7 +397,9 @@ python meshfest-lite.py \
   --bridge-mesh-to-vara EA9XYZ \
   --mesh-allow-dest-shortname MSH3,MSH6 \
   --hf-allow-tx-dest-shortname MSH4 \
-  --verbose 2
+  --log-mode file \
+  --log-file meshfest.log \
+  --verbose 0
 ```
 
 ---
@@ -428,7 +413,7 @@ La aplicación actúa como una pasarela inteligente capaz de reenviar, formatear
 MesHFest-lite es una versión simplificada (un archivo) pensada para ejecutarse como servicio o como un puente/chat sencillo, ideal para estaciones desatendidas, despliegues portátiles o configuraciones mínimas donde la estabilidad y el bajo consumo de recursos son prioritarios.
 
 Características principales:
-- Puente bidireccional de mensajes (Mesh ⇄ HF)
+- Puente bidireccional de mensajes (Meshtastic ⇄ HF)
 - Gestión automática de reenvíos y confirmaciones
 - Lógica de enrutado basada en indicativos
 - Arquitectura ligera orientada a ejecución como servicio
@@ -443,11 +428,12 @@ MesHFest-lite permite crear ecosistemas de comunicación híbridos donde Meshtas
 
 ## 1️⃣ Configuración HF / VARA
 
-- Indicativo de tu estación. `--call` (obligatorio)
-Ejemplo:
-```bash
---call EA1ABC
-```
+- Indicativo de tu estación. `--call` (obligatorio);.
+
+  Ejemplo:
+  ```bash
+  --call EA1ABC
+  ```
 
 - IP del servidor KISS (VARA).  `--host` . Por defecto: `127.0.0.1`
 Ejemplo:
