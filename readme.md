@@ -3,7 +3,7 @@
 ## Index
 
 
-🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#architecture-diagram-hf--mesh-hybrid-model) • [CLI Reference](#meshfest-lite--cli-reference) • [Syntax & Examples](#sintaxis--examples)
+🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#-architecture-diagram-hf--mesh-hybrid-model) • [CLI Reference](#meshfest-lite--cli-reference) • [Syntax & Examples](#sintaxis--examples)
 
 🇪🇸 [Resumen de la Aplicación](#resumen-en-castellano) • [Sintaxis y Ejemplos](#sintaxis-version-en-castellano)
 
