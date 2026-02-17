@@ -1,33 +1,30 @@
-<p align="center"><img src="https://github.com/user-attachments/assets/0b4b4762-5eaf-4b14-a8ea-89b3aff7a322" width="450"></p>
-<p align="center">
-<a href="#application-summary">🇺🇸 Application Summary</a> •
-  <a href="#-architecture-diagram-hf--mesh-hybrid-model">Architecture Diagram</a><br> •
-<a href="#sintaxis--examples">Syntax & Examples</a> •
-<a href="#meshfest-lite--cli-reference">CLI Reference</a> •
-<p align="center">
-<a href="#resumen-en-castellano">🇪🇸 Resumen de la Aplicación</a> •
-<a href="#sintaxis-version-en-castellano">Sintaxis y Ejemplos</a>
-  </p>
-</p>
-
 ![meshfest-lite-v1](https://github.com/user-attachments/assets/47a2aec6-0193-45ea-89e2-839fcbd40c36)
+
+## Index
+
+
+🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#architecture-diagram-hf--mesh-hybrid-model) • [CLI Reference](#meshfest-lite--cli-reference) • [Syntax & Examples](#sintaxis--examples)
+
+🇪🇸 [Resumen de la Aplicación](#resumen-en-castellano) • [Sintaxis y Ejemplos](#sintaxis-version-en-castellano)
+
 
 ---
 
 ## **Application Summary**
 
-MesHFest is a lightweight communication bridge designed to interconnect Meshtastic networks with HF digital modes such as VARA HF and JS8Call, enabling seamless message forwarding between radio and mesh infrastructures.
+MesHFest-lite is a lightweight & simple communication bridge designed to interconnect Meshtastic networks with HF digital modes such as VARA HF (and still not JS8Call), enabling seamless message forwarding between radio and mesh infrastructures.
 
 The application acts as an intelligent gateway that can relay, format, acknowledge, and route messages between different technologies, allowing stations operating on HF to communicate with Meshtastic nodes and vice versa.
 
-MesHFest Lite is a simplified version designed to run as a service or as a simple bridge/chat, making it ideal for unattended stations, portable deployments, or minimal setups where stability and low resource usage are key.
+MesHFest-lite is a simplified version (one file) designed to run as a service or as a simple bridge/chat, making it ideal for unattended stations, portable deployments, or minimal setups where stability and low resource usage are key.
 
 Key features include:
-- Bidirectional message bridging (Mesh ⇄ HF)
+- Bidirectional message bridging (Mesh <-> HF)
 - Automatic forwarding and acknowledgment handling
 - Callsign-aware routing logic
 - Lightweight and service-friendly architecture
 - Designed for experimentation, emergency comms, and hybrid RF networks
+- Send & Receive files from Station to Sation (not to Meshtastic)
 
 MesHFest enables the creation of hybrid communication ecosystems where LoRa mesh and HF digital radio coexist and complement each other.
 
