@@ -114,6 +114,8 @@ TEXTS = {
         "warn_nodeid_not_found": "[ERR] ❌ NodeId para '{dest}' no encontrado en DB (iface.nodes). DM no enviado.",
         "warn_forward_incomplete": "[WARN] ⚠️ Forward incompleto desde {src}: {text}",
         "warn_forward_malformed": "Forward malformado desde {src}: {text}",
+        "info_mesh_forward_policy": "[INFO] ✅ Política FORWARD LoRa: Nodo/s Meshtastic permitido/s → {nodes}",
+        "info_hf_output_policy": "[INFO] ✅ Política OUTPUT HF: Nodo/s Meshtastic permitido/s → {nodes}",
 
 
 
@@ -159,6 +161,9 @@ TEXTS = {
         "warn_nodeid_not_found": "[ERR] ❌ NodeId for '{dest}' not found in DB (iface.nodes). DM not sent.",
         "warn_forward_incomplete": "[WARN] ⚠ Incomplete forward from {src}: {text}",
         "warn_forward_malformed": "Malformed forward from {src}: {text}",
+        "info_mesh_forward_policy": "[INFO] ✅ LoRa FORWARD policy: allowed Meshtastic Node/s → {nodes}",
+        "info_hf_output_policy": "[INFO] ✅ HF OUTPUT policy: allowed Meshtastic Node/s → {nodes}",
+
 
 
 
@@ -2328,7 +2333,7 @@ def main():
             for s in args.mesh_allow_dest_shortname.split(",")
             if s.strip()}
             
-            
+          
     # --hf-allow-tx-dest-shortname" 
     # Permite solo emitir desde estacion HF para otra estacion si los nodos estan en la lista, sino hay opcion permite todos los destinos     
     hf_allowed_tx_shortnames = None
@@ -2339,10 +2344,6 @@ def main():
             if s.strip()
         }
     
-    app.hf_allowed_tx_shortnames = hf_allowed_tx_shortnames
-    if hf_allowed_tx_shortnames:
-        app.log(f"[INFO] ✅ HF TX restricted to @dest: {', '.join(sorted(hf_allowed_tx_shortnames))}", level=1)
-
     
     mesh = None
     if args.bridge_mesh:
@@ -2381,12 +2382,10 @@ def main():
       
         #Comprobamos si el nodo destino ha sido escuchado por el nodo que hara el reenvio:
         if args.mesh_allow_dest_shortname and not mesh_dest_id:
-            #app.log(f"[ERR] ❌ No se encontró el nodo '{args.mesh_dest_shortname}' "f"en iface.nodes del nodo bridge. Aborto.",level=0)
             app.log(app.var_text("err_mesh_shortname_not_found", shortname=args.mesh_allow_dest_shortname), level=0)
             return
 
         if args.mesh_dest_id and not mesh_dest_id:
-            #app.log(f"[ERR] ❌ No se pudo usar destinationId '{args.mesh_dest_id}'. Aborto.",level=0)
             app.log(app.var_text("err_mesh_dest_id_invalid", dest_id=args.mesh_dest_id), level=0)
             return
 
@@ -2396,8 +2395,16 @@ def main():
             app.log(app.var_text("info_mesh_dest_confirmed", dest_input=args.mesh_allow_dest_shortname or args.mesh_dest_id, dest_id=mesh_dest_id), level=1)
 
         if allowed_shortnames:
-            app.log(f"[INFO] ✅ Relay restricted to Meshtastic destinations: {', '.join(sorted(allowed_shortnames))}", level=1)
+            #app.log(f"[INFO] ✅ LoRa FORWARD policy: allowed Meshtastic Node/s → {', '.join(sorted(allowed_shortnames))}", level=1)
+            app.log(app.var_text("info_mesh_forward_policy", nodes=", ".join(sorted(allowed_shortnames))), level=1)
 
+            
+        app.hf_allowed_tx_shortnames = hf_allowed_tx_shortnames  
+        if hf_allowed_tx_shortnames:
+            #app.log(f"[INFO] ✅ HF OUTPUT policy: allowed Meshtastic Node/s → {', '.join(sorted(hf_allowed_tx_shortnames))}", level=1)
+            app.log(app.var_text("info_hf_output_policy", nodes=", ".join(sorted(hf_allowed_tx_shortnames))), level=1)
+
+            
         # Construcción dinámica de prefijos
         vara_to_mesh_prefix = args.bridge_varato_mesh_prefix.replace("{call}", app.mycall)
         mesh_to_vara_prefix = args.bridge_meshto_vara_prefix.replace("{call}", app.mycall)
@@ -2445,7 +2452,7 @@ def main():
     while not stop_evt.is_set():
         time.sleep(0.2)
     
-    app.log("Leaving MesHFest...")
+    app.log("\nLeaving MesHFest-lite...\n")
     app.kiss.close()
     app.close()
     
