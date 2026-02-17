@@ -3,9 +3,10 @@
 ## Index
 
 
-🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#-architecture-diagram-hf--mesh-hybrid-model) • [Syntax & Examples](#syntax--examples)
+🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#-architecture-diagram-hf--mesh-hybrid-model) • [Syntax & Examples](#syntax--examples) • [🧪 Example Configurations](#-example-configurations)
 
-🇪🇸 [Resumen de la Aplicación](##resumen-de-la-aplicación) • [Sintaxis y Ejemplos](#sintaxis-y-ejemplos)
+
+🇪🇸 [Resumen de la Aplicación](#resumen-de-la-aplicación) • [Sintaxis y Ejemplos](#sintaxis-y-ejemplos)
 
 
 ---
@@ -28,11 +29,14 @@ Key features include:
 
 MesHFest enables the creation of hybrid communication ecosystems where Meshtastic and HF digital radio coexist and complement each other.
 
+If you like this work:
+
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M81CV1EX)
+
 ---
 
 
 ## 🧠 Architecture Diagram (HF ↔ Mesh Hybrid Model)
-
 
 ```
            ~~~~~~~~~~~~~ HF RF LINK ~~~~~~~~~~~~~
@@ -164,7 +168,7 @@ It turns VARA into a **transparent transport layer**, not a session controller.
 
 To exit the program, type `exit` or press `Ctrl+C`.
 
-## 1️⃣ Core HF / VARA Configuration
+### 1️⃣ Core HF / VARA Configuration
 
 - Your station callsign: `--call [CALLSIGN] (required)`
 
@@ -196,7 +200,7 @@ To exit the program, type `exit` or press `Ctrl+C`.
 
 ---
 
-## 2️⃣ Meshtastic Interface Configuration
+### 2️⃣ Meshtastic Interface Configuration
 
 - Serial device for Meshtastic. `--mesh-serial [COM]`
   
@@ -247,7 +251,7 @@ To exit the program, type `exit` or press `Ctrl+C`.
 
 ---
 
-## 3️⃣ Security & Policy Controls (Firewall)
+### 3️⃣ Security & Policy Controls (Firewall)
 
 - Restricts which Meshtastic shortnames can be used as relay destinations (HF → Mesh). `--mesh-allow-dest-shortname [MSH]`  . If omitted, any destination is allowed.
 
@@ -273,7 +277,7 @@ To exit the program, type `exit` or press `Ctrl+C`.
 
 ---
 
-## 4️⃣ Bridge Configuration (VARA ↔ Meshtastic)
+### 4️⃣ Bridge Configuration (VARA ↔ Meshtastic)
 
 
 - Enable Meshtastic ↔ VARA bridging. `--bridge-mesh`.
@@ -306,7 +310,7 @@ To exit the program, type `exit` or press `Ctrl+C`.
 
 ---
 
-## 5️⃣ Monitoring & Logging
+### 5️⃣ Monitoring & Logging
 
 - Monitor mode (shows readable traffic not addressed to you). `--monitor`.
 
@@ -338,7 +342,7 @@ To exit the program, type `exit` or press `Ctrl+C`.
 
 ---
 
-## 6️⃣ Language
+### 6️⃣ Language
 
 Interface language: `--lang [LANG}` . Default: `en`. Options: English `en` or Spanish `es`.
 
@@ -368,6 +372,7 @@ python meshfest-lite.py \
   --log-file mylog.txt \
   --monitor \
   --verbose 2
+  --lang es
 ```
 
 
@@ -404,7 +409,7 @@ python meshfest-lite.py \
 
 ---
 
-## 🇪🇸**Resumen de la Aplicación**
+## 🇪🇸 **Resumen de la Aplicación**
 
 MesHFest es un puente de comunicaciones ligero diseñado para interconectar redes Meshtastic con modos digitales en HF como VARA HF (y todavía no JS8Call), permitiendo el reenvío transparente de mensajes entre infraestructuras de radio y redes Meshtastic.
 
@@ -421,112 +426,103 @@ Características principales:
 
 MesHFest-lite permite crear ecosistemas de comunicación híbridos donde Meshtastic y radio digital en HF conviven y se complementan.
 
+Si quieres apoyar este trabajo:
 
+[![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/M4M81CV1EX)
 ---
 
 ## Sintaxis y Ejemplos
 
-## 1️⃣ Configuración HF / VARA
+### 1️⃣ Configuración HF / VARA
 
-- Indicativo de tu estación. `--call` (obligatorio);.
+- Indicativo de tu estación. `--call` (obligatorio).
 
-  Ejemplo:
   ```bash
-  --call EA1ABC
+   --call EA1ABC
   ```
 
 - IP del servidor KISS (VARA).  `--host` . Por defecto: `127.0.0.1`
-Ejemplo:
-`--host 192.168.1.10`
 
+  ```bash
+  --host 192.168.1.10
+  ```
 
 - Puerto TCP de VARA.  `--port`. Por defecto: `8100`
-Ejemplo:
-`--port 8300`
+
+  ```bash
+  --port 8300
+  ```
 
 - Campo destino AX.25 (solo estético).  `--axdst`. Por defecto: `APVARA`
-Ejemplo:
-`--axdst VARA-HF`
+
+  ```bash
+  --axdst VARA-HF
+  ```
 
 ---
 
 ## 2️⃣ Configuración Meshtastic
 
-
 - Puerto serie USB. `--mesh-serial`
 
-```bash
---mesh-serial /dev/ttyUSB0
-```
-
+  ```bash
+  --mesh-serial /dev/ttyUSB0
+  ```
 
 - Conexión por red. `--mesh-host`
-Ejemplo: 
-```bash
---mesh-host 192.168.1.25:4403
-```
 
+  ```bash
+  --mesh-host 192.168.1.25:4403
+  ```
 
 - Enviar a un NodeId concreto. `--mesh-dest-id`
-Ejemplo:
-```bash
---mesh-dest-id !abcdef01
-```
 
+  ```bash
+  --mesh-dest-id !abcdef01
+  ```
 
 - Seleccionar canal por índice. `--mesh-channel-index`
-Ejemplo: 
-`--mesh-channel-index 1`
+ 
+  ```bash
+  --mesh-channel-index 1
+  ```
 
 - Seleccionar canal por nombre. `--mesh-channel-name`
-Ejemplo:
-`--mesh-channel-name MediumFast`
+  
+  ```bash
+  --mesh-channel-name MediumFast
+  ```
 
 
 - Solicitar ACK al enviar a un nodo específico. `--mesh-want-ack`
-Ejemplo:
-`--mesh-want-ack`
+
+ ```bash
+ --mesh-want-ack
+ ```
 
 ---
 
 ## 3️⃣ Controles de Seguridad
 
-
 - Limita qué nodos Meshtastic pueden recibir tráfico recibido desde HF. `--mesh-allow-dest-shortname`
-Ejemplo:
-```bash
---mesh-allow-dest-shortname MSH3,MSH6
-```
 
+  ```bash
+  --mesh-allow-dest-shortname MSH3,MSH6
+  ```
 
 - Limita a qué nodos de Meshtastic `@DEST` pueden transmitirse por HF. `--hf-allow-tx-dest-shortname`
 
-Ejemplo:
-```bash
---hf-allow-tx-dest-shortname MSH4
-```
+  ```bash
+  --hf-allow-tx-dest-shortname MSH4
+  ```
 
-Ejemplo práctico:
-
-```
-EA1ABC: @MSH3 prueba
-```
-
-Será bloqueado.
-
-```
-EA1ABC: @MSH4 prueba
-```
-
-Será transmitido.
+  - Ejemplo práctico: ``` EA1ABC > @MSH3: prueba ``` Será bloqueado. En cambio si escribimos en el CLI ```EA1ABC > @MSH4: prueba```. Será transmitido.
 
 ---
 
 ## 4️⃣ Configuración del Bridge
 
 Activa el bridge Meshtastic ↔ VARA. `--bridge-mesh`
-Ejemplo:
-
 
 
 - Destino VARA para tráfico procedente de la malla. `--bridge-mesh-to-vara`
