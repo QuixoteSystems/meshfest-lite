@@ -3,7 +3,7 @@
 ## Index
 
 
-🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#-architecture-diagram-hf--mesh-hybrid-model) • [Syntax & Examples](#sintaxis--examples)
+🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#-architecture-diagram-hf--mesh-hybrid-model) • [Syntax & Examples](#syntax--examples)
 
 🇪🇸 [Resumen de la Aplicación](##resumen-de-la-aplicación) • [Sintaxis y Ejemplos](#sintaxis-y-ejemplos)
 
@@ -154,7 +154,7 @@ It turns VARA into a **transparent transport layer**, not a session controller.
 
 ---
 
-## Sintaxis & Examples
+## Syntax & Examples
 
 To exit the program, type `exit` or press `Ctrl+C`.
 
