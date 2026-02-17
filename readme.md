@@ -5,7 +5,7 @@
 
 🇺🇸 [Application Summary](#application-summary) • [Architecture Diagram](#-architecture-diagram-hf--mesh-hybrid-model) • [Syntax & Examples](#sintaxis--examples)
 
-🇪🇸 [Resumen de la Aplicación](##resumen-de-la-aplicación) • [Sintaxis y Ejemplos](#sintaxis-version-en-castellano)
+🇪🇸 [Resumen de la Aplicación](##resumen-de-la-aplicación) • [Sintaxis y Ejemplos](#sintaxis-y-ejemplos)
 
 
 ---
